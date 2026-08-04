@@ -9,7 +9,7 @@
  * changer le point de départ ici n'a d'effet utile qu'en mode réel.
  */
 
-export const DEFAULT_CITY = "";
+export const DEFAULT_CITY = process.env.NEXT_PUBLIC_DEFAULT_CITY ?? "";
 export const DEFAULT_RADIUS_M = 5000;
 
 /**

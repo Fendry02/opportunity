@@ -22,7 +22,8 @@ and a local SQLite cache you control.
   missing mobile viewport, weak SEO basics, old tech, no contact form, missing
   Open Graph tags, no favicon, slow or heavy pages.
 - Display prospects on a Leaflet map, with score-colored pins and a synchronized
-  sortable list.
+  sortable list. In local mode, the map can use the official Google Maps
+  JavaScript API when a browser key is configured.
 - Open a prospect panel without leaving the map, inspect the score breakdown,
   then export a Markdown brief ready for sales outreach.
 - Cache geocoding, Google Places, website fetches, and enrichment calls in
@@ -44,6 +45,23 @@ By default, `.env.local.example` uses `MOCK_EXTERNAL=1`. In this mode the app
 reads from `fixtures/` and makes no external network calls, so you can demo and
 test the product without a Google Places key. Search for `Zone demo` to use the
 fixture dataset.
+
+## Local Google Maps Mode
+
+For a private local setup with the Google Maps background and a prefilled search
+address, keep the values only in `.env.local`:
+
+```bash
+GOOGLE_PLACES_API_KEY=your_google_places_key
+MOCK_EXTERNAL=0
+NEXT_PUBLIC_DEFAULT_CITY=
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=$GOOGLE_PLACES_API_KEY
+```
+
+`NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` is intentionally browser-visible because
+Google Maps JavaScript API runs in the client. Restrict that key in Google Cloud
+to `http://localhost:3000/*` and to the Maps JavaScript API. If the variable is
+empty, Opportunity falls back to the OpenStreetMap France layer.
 
 ## Scripts
 

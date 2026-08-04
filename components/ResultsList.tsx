@@ -8,8 +8,8 @@ import { formatDistance } from "@/lib/format";
 import type { ProspectSummary } from "@/lib/types";
 
 /**
- * Liste compacte, synchronisée avec la carte : survol et sélection sont
- * partagés dans les deux sens.
+ * Liste compacte, synchronisée avec la carte : la liste réagit au survol,
+ * tandis que la carte sélectionne uniquement au clic sur un pin.
  */
 
 const SITE_STATE_LABEL: Record<ProspectSummary["siteState"], string> = {
@@ -30,7 +30,7 @@ export function ResultsList({
   results: ProspectSummary[];
   selectedId: string | null;
   onSelect: (id: string | null) => void;
-  /** Même geste que le clic sur un pin : ouvre la fiche dans le panneau. */
+  /** Clic sur le nom : ouvre la fiche dans le panneau. */
   onOpen: (id: string) => void;
   /**
    * Ne vaut `true` que lorsque la sélection vient de la carte. Faire défiler
