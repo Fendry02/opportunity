@@ -1,0 +1,32 @@
+{
+  "type": "FeatureCollection",
+  "version": "draft",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "properties": {
+        "label": "Zone demo",
+        "score": 0.96,
+        "id": "demo-zone",
+        "type": "municipality",
+        "name": "Zone demo",
+        "postcode": "00000",
+        "citycode": "demo-zone",
+        "city": "Zone demo",
+        "context": "zone fictive",
+        "population": 0
+      }
+    }
+  ],
+  "attribution": "BAN",
+  "licence": "ETALAB-2.0",
+  "query": "Zone demo",
+  "limit": 1
+}

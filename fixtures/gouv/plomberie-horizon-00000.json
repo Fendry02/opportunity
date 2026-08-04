@@ -1,0 +1,33 @@
+{
+  "results": [
+    {
+      "siren": "000000004",
+      "nom_complet": "PLOMBERIE HORIZON",
+      "nom_raison_sociale": "PLOMBERIE HORIZON",
+      "nature_juridique": "5499",
+      "activite_principale": "43.22A",
+      "date_creation": "2012-11-23",
+      "siege": {
+        "siret": "00000000400004",
+        "code_postal": "00000",
+        "activite_principale": "43.22A"
+      },
+      "matching_etablissements": [
+        {
+          "siret": "00000000400004",
+          "code_postal": "00000"
+        }
+      ],
+      "dirigeants": [
+        {
+          "nom": "LEROY",
+          "prenoms": "JULES",
+          "qualite": "Gérant",
+          "type_dirigeant": "personne physique"
+        }
+      ],
+      "section_activite_principale": "F",
+      "etat_administratif": "A"
+    }
+  ]
+}

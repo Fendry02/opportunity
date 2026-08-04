@@ -1,0 +1,33 @@
+{
+  "results": [
+    {
+      "siren": "000000005",
+      "nom_complet": "COIFFURE ECLAT",
+      "nom_raison_sociale": "COIFFURE ECLAT",
+      "nature_juridique": "1000",
+      "activite_principale": "96.02A",
+      "date_creation": "2014-03-05",
+      "siege": {
+        "siret": "00000000500005",
+        "code_postal": "00000",
+        "activite_principale": "96.02A"
+      },
+      "matching_etablissements": [
+        {
+          "siret": "00000000500005",
+          "code_postal": "00000"
+        }
+      ],
+      "dirigeants": [
+        {
+          "nom": "DUPONT",
+          "prenoms": "CLAUDE",
+          "qualite": "Exploitant",
+          "type_dirigeant": "personne physique"
+        }
+      ],
+      "section_activite_principale": "S",
+      "etat_administratif": "A"
+    }
+  ]
+}

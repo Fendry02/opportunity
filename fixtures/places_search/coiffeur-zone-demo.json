@@ -1,0 +1,42 @@
+{
+  "places": [
+    {
+      "id": "mock_coiffure_eclat",
+      "displayName": {
+        "text": "Coiffure Éclat",
+        "languageCode": "fr"
+      },
+      "location": {
+        "latitude": -0.003,
+        "longitude": 0.002
+      },
+      "types": [
+        "hair_salon",
+        "point_of_interest",
+        "establishment"
+      ],
+      "primaryType": "hair_salon",
+      "formattedAddress": "1 voie demo, 00000 Zone demo, France",
+      "businessStatus": "OPERATIONAL"
+    },
+    {
+      "id": "mock_coiffure_ln",
+      "displayName": {
+        "text": "L&N Coiffure",
+        "languageCode": "fr"
+      },
+      "location": {
+        "latitude": 0.004,
+        "longitude": -0.002
+      },
+      "types": [
+        "hair_salon",
+        "beauty_salon",
+        "point_of_interest"
+      ],
+      "primaryType": "hair_salon",
+      "formattedAddress": "2 voie demo, 00000 Zone demo, France",
+      "businessStatus": "OPERATIONAL"
+    }
+  ]
+}

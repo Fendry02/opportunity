@@ -1,0 +1,92 @@
+{
+  "mock_plomberie_atlas": {
+    "id": "mock_plomberie_atlas",
+    "nationalPhoneNumber": "01 00 00 00 00",
+    "rating": 4.6,
+    "userRatingCount": 38,
+    "regularOpeningHours": {
+      "weekdayDescriptions": [
+        "lundi: 08:00 – 18:00",
+        "mardi: 08:00 – 18:00",
+        "mercredi: 08:00 – 18:00",
+        "jeudi: 08:00 – 18:00",
+        "vendredi: 08:00 – 17:00",
+        "samedi: Fermé",
+        "dimanche: Fermé"
+      ]
+    }
+  },
+  "mock_plomberie_horizon": {
+    "id": "mock_plomberie_horizon",
+    "websiteUri": "https://www.plomberie-horizon.fr/",
+    "nationalPhoneNumber": "01 00 00 00 00",
+    "rating": 4.1,
+    "userRatingCount": 22
+  },
+  "mock_plomberie_locale": {
+    "id": "mock_plomberie_locale",
+    "nationalPhoneNumber": "01 00 00 00 00",
+    "rating": 3.9,
+    "userRatingCount": 11
+  },
+  "mock_plomberie_optout_site": {
+    "id": "mock_plomberie_optout_site",
+    "websiteUri": "http://pasdedémarchagepourunsite.com/",
+    "nationalPhoneNumber": "06 00 00 00 00",
+    "rating": 4.9,
+    "userRatingCount": 97
+  },
+  "mock_resto_ancien": {
+    "id": "mock_resto_ancien",
+    "websiteUri": "http://www.restaurant-ancien.fr/",
+    "nationalPhoneNumber": "01 00 00 00 00",
+    "rating": 4.4,
+    "userRatingCount": 213,
+    "regularOpeningHours": {
+      "weekdayDescriptions": [
+        "lundi: Fermé",
+        "mardi: 12:00 – 14:00, 19:00 – 22:30",
+        "mercredi: 12:00 – 14:00, 19:00 – 22:30",
+        "jeudi: 12:00 – 14:00, 19:00 – 22:30",
+        "vendredi: 12:00 – 14:00, 19:00 – 23:00",
+        "samedi: 19:00 – 23:00",
+        "dimanche: Fermé"
+      ]
+    }
+  },
+  "mock_resto_la_table": {
+    "id": "mock_resto_la_table",
+    "websiteUri": "https://latablemoderne.fr/",
+    "nationalPhoneNumber": "01 00 00 00 00",
+    "rating": 4.7,
+    "userRatingCount": 486
+  },
+  "mock_coiffure_eclat": {
+    "id": "mock_coiffure_eclat",
+    "websiteUri": "http://www.coiffure-eclat.fr/",
+    "nationalPhoneNumber": "01 00 00 00 00",
+    "rating": 4.2,
+    "userRatingCount": 57
+  },
+  "mock_coiffure_ln": {
+    "id": "mock_coiffure_ln",
+    "websiteUri": "http://ln-coiffure.fr/",
+    "nationalPhoneNumber": "01 00 00 00 00",
+    "rating": 3.8,
+    "userRatingCount": 19
+  },
+  "mock_garage_atelier": {
+    "id": "mock_garage_atelier",
+    "websiteUri": "http://garage-atelier.e-monsite.com/",
+    "nationalPhoneNumber": "01 00 00 00 00",
+    "rating": 4.5,
+    "userRatingCount": 64
+  },
+  "mock_garage_demo_auto": {
+    "id": "mock_garage_demo_auto",
+    "websiteUri": "https://www.demoauto.fr/",
+    "nationalPhoneNumber": "01 00 00 00 00",
+    "rating": 4.3,
+    "userRatingCount": 128
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "results": [
+    {
+      "siren": "000000001",
+      "nom_complet": "SARL RESTAURANT ANCIEN",
+      "nom_raison_sociale": "SARL RESTAURANT ANCIEN",
+      "nature_juridique": "5499",
+      "activite_principale": "56.10C",
+      "date_creation": "1987-04-02",
+      "siege": {
+        "siret": "00000000100001",
+        "code_postal": "00000",
+        "activite_principale": "56.10C"
+      },
+      "matching_etablissements": [
+        {
+          "siret": "00000000100001",
+          "code_postal": "00000"
+        }
+      ],
+      "dirigeants": [
+        {
+          "nom": "MARTIN",
+          "prenoms": "ALEX",
+          "qualite": "Gérant",
+          "type_dirigeant": "personne physique"
+        }
+      ],
+      "section_activite_principale": "I",
+      "etat_administratif": "A"
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "places": [
+    {
+      "id": "mock_plomberie_atlas",
+      "displayName": {
+        "text": "Plomberie Atlas",
+        "languageCode": "fr"
+      },
+      "location": {
+        "latitude": 0.002,
+        "longitude": 0.002
+      },
+      "types": [
+        "plumber",
+        "point_of_interest",
+        "establishment"
+      ],
+      "primaryType": "plumber",
+      "formattedAddress": "1 voie demo, 00000 Zone demo, France",
+      "businessStatus": "OPERATIONAL"
+    },
+    {
+      "id": "mock_plomberie_horizon",
+      "displayName": {
+        "text": "Plomberie Horizon",
+        "languageCode": "fr"
+      },
+      "location": {
+        "latitude": 0.003,
+        "longitude": -0.003
+      },
+      "types": [
+        "plumber",
+        "point_of_interest",
+        "establishment"
+      ],
+      "primaryType": "plumber",
+      "formattedAddress": "2 voie demo, 00000 Zone demo, France",
+      "businessStatus": "OPERATIONAL"
+    },
+    {
+      "id": "mock_plomberie_locale",
+      "displayName": {
+        "text": "Plomberie Locale",
+        "languageCode": "fr"
+      },
+      "location": {
+        "latitude": 0.025,
+        "longitude": 0.025
+      },
+      "types": [
+        "plumber",
+        "point_of_interest",
+        "establishment"
+      ],
+      "primaryType": "plumber",
+      "formattedAddress": "3 voie demo, 00000 Zone demo, France",
+      "businessStatus": "OPERATIONAL"
+    },
+    {
+      "id": "mock_plomberie_optout_nom",
+      "displayName": {
+        "text": "Plomberie Ravier — PAS DE DÉMARCHAGE",
+        "languageCode": "fr"
+      },
+      "location": {
+        "latitude": 0.0015,
+        "longitude": -0.001
+      },
+      "types": [
+        "plumber",
+        "point_of_interest",
+        "establishment"
+      ],
+      "primaryType": "plumber",
+      "formattedAddress": "4 voie demo, 00000 Zone demo, France",
+      "businessStatus": "OPERATIONAL"
+    },
+    {
+      "id": "mock_plomberie_optout_site",
+      "displayName": {
+        "text": "Grange et Fils",
+        "languageCode": "fr"
+      },
+      "location": {
+        "latitude": -0.002,
+        "longitude": 0.002
+      },
+      "types": [
+        "plumber",
+        "point_of_interest",
+        "establishment"
+      ],
+      "primaryType": "plumber",
+      "formattedAddress": "5 voie demo, 00000 Zone demo, France",
+      "businessStatus": "OPERATIONAL"
+    },
+    {
+      "id": "mock_plomberie_fermee",
+      "displayName": {
+        "text": "Sanitaires Lebreton",
+        "languageCode": "fr"
+      },
+      "location": {
+        "latitude": 0.001,
+        "longitude": 0.001
+      },
+      "types": [
+        "plumber",
+        "point_of_interest",
+        "establishment"
+      ],
+      "primaryType": "plumber",
+      "formattedAddress": "6 voie demo, 00000 Zone demo, France",
+      "businessStatus": "CLOSED_PERMANENTLY"
+    }
+  ]
+}

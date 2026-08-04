@@ -1,0 +1,33 @@
+{
+  "results": [
+    {
+      "siren": "000000007",
+      "nom_complet": "GARAGE ATELIER",
+      "nom_raison_sociale": "GARAGE ATELIER",
+      "nature_juridique": "5499",
+      "activite_principale": "45.20A",
+      "date_creation": "2001-02-12",
+      "siege": {
+        "siret": "00000000700007",
+        "code_postal": "00000",
+        "activite_principale": "45.20A"
+      },
+      "matching_etablissements": [
+        {
+          "siret": "00000000700007",
+          "code_postal": "00000"
+        }
+      ],
+      "dirigeants": [
+        {
+          "nom": "BERNARD",
+          "prenoms": "SAM",
+          "qualite": "Gérant",
+          "type_dirigeant": "personne physique"
+        }
+      ],
+      "section_activite_principale": "G",
+      "etat_administratif": "A"
+    }
+  ]
+}

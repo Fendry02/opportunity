@@ -1,0 +1,33 @@
+{
+  "results": [
+    {
+      "siren": "000000002",
+      "nom_complet": "AUTO SERVICES DEMO",
+      "nom_raison_sociale": "AUTO SERVICES DEMO",
+      "nature_juridique": "5710",
+      "activite_principale": "45.20A",
+      "date_creation": "2004-09-15",
+      "siege": {
+        "siret": "00000000200002",
+        "code_postal": "00000",
+        "activite_principale": "45.20A"
+      },
+      "matching_etablissements": [
+        {
+          "siret": "00000000200002",
+          "code_postal": "00000"
+        }
+      ],
+      "dirigeants": [
+        {
+          "nom": "DURAND",
+          "prenoms": "ALEX",
+          "qualite": "Président",
+          "type_dirigeant": "personne physique"
+        }
+      ],
+      "section_activite_principale": "G",
+      "etat_administratif": "A"
+    }
+  ]
+}

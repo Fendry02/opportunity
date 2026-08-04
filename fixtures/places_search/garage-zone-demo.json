@@ -1,0 +1,42 @@
+{
+  "places": [
+    {
+      "id": "mock_garage_atelier",
+      "displayName": {
+        "text": "Garage Atelier",
+        "languageCode": "fr"
+      },
+      "location": {
+        "latitude": -0.004,
+        "longitude": 0.003
+      },
+      "types": [
+        "car_repair",
+        "point_of_interest",
+        "establishment"
+      ],
+      "primaryType": "car_repair",
+      "formattedAddress": "1 voie demo, 00000 Zone demo, France",
+      "businessStatus": "OPERATIONAL"
+    },
+    {
+      "id": "mock_garage_demo_auto",
+      "displayName": {
+        "text": "Auto Services Demo",
+        "languageCode": "fr"
+      },
+      "location": {
+        "latitude": 0.0035,
+        "longitude": 0.004
+      },
+      "types": [
+        "car_repair",
+        "car_dealer",
+        "point_of_interest"
+      ],
+      "primaryType": "car_repair",
+      "formattedAddress": "2 voie demo, 00000 Zone demo, France",
+      "businessStatus": "OPERATIONAL"
+    }
+  ]
+}

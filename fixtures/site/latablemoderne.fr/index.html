@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>La Table Moderne — Restaurant à Zone demo</title>
+    <meta
+      name="description"
+      content="Cuisine de saison au cœur de Zone demo. Réservation en ligne, menu du jour et carte des vins."
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href="https://latablemoderne.fr/" />
+    <meta property="og:title" content="La Table Moderne" />
+    <meta property="og:description" content="Restaurant de saison à Zone demo." />
+    <meta property="og:image" content="https://latablemoderne.fr/og.jpg" />
+    <meta property="og:type" content="restaurant" />
+    <link rel="stylesheet" href="/assets/app.css" />
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-8XQ2M4K1TZ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag('js', new Date());
+      gtag('config', 'G-8XQ2M4K1TZ');
+    </script>
+  </head>
+  <body style="background:#ffffff; color:#1b1b1b">
+    <header>
+      <nav>
+        <a href="/">Accueil</a>
+        <a href="/carte">La carte</a>
+        <a href="/prestations">Privatisation</a>
+        <a href="/contact">Contact</a>
+      </nav>
+    </header>
+
+    <main>
+      <h1>La Table Moderne</h1>
+      <p style="color:#c2410c">
+        Une cuisine de saison, des producteurs bretons, un menu qui change
+        chaque semaine.
+      </p>
+
+      <section>
+        <h2>Menu du midi</h2>
+        <p>Entrée, plat, dessert — 26 €, du mardi au vendredi.</p>
+      </section>
+
+      <section>
+        <h2>Privatisation</h2>
+        <p>Salle de 40 couverts privatisable pour vos événements.</p>
+      </section>
+
+      <section>
+        <h2>Réserver une table</h2>
+        <form action="/reservation" method="post">
+          <label for="email">Votre e-mail</label>
+          <input type="email" id="email" name="email" required />
+          <label for="message">Votre demande</label>
+          <textarea id="message" name="message"></textarea>
+          <button type="submit">Envoyer</button>
+        </form>
+      </section>
+    </main>
+
+    <footer style="background:#0f766e">
+      <p>
+        Suivez-nous :
+        <a href="https://www.instagram.com/latablemoderne">Instagram</a>
+        ·
+        <a href="https://www.facebook.com/latablemoderne">Facebook</a>
+      </p>
+      <p>© 2026 La Table Moderne — 5 place demo, 00000 Zone demo</p>
+    </footer>
+  </body>
+</html>

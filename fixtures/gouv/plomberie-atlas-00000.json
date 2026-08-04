@@ -1,0 +1,33 @@
+{
+  "results": [
+    {
+      "siren": "000000003",
+      "nom_complet": "PLOMBERIE ATLAS",
+      "nom_raison_sociale": "PLOMBERIE ATLAS",
+      "nature_juridique": "5499",
+      "activite_principale": "43.22A",
+      "date_creation": "2009-06-18",
+      "siege": {
+        "siret": "00000000300003",
+        "code_postal": "00000",
+        "activite_principale": "43.22A"
+      },
+      "matching_etablissements": [
+        {
+          "siret": "00000000300003",
+          "code_postal": "00000"
+        }
+      ],
+      "dirigeants": [
+        {
+          "nom": "MARTIN",
+          "prenoms": "MICHEL",
+          "qualite": "Gérant",
+          "type_dirigeant": "personne physique"
+        }
+      ],
+      "section_activite_principale": "F",
+      "etat_administratif": "A"
+    }
+  ]
+}

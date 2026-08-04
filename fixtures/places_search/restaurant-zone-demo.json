@@ -1,0 +1,44 @@
+{
+  "places": [
+    {
+      "id": "mock_resto_ancien",
+      "displayName": {
+        "text": "Restaurant Ancien",
+        "languageCode": "fr"
+      },
+      "location": {
+        "latitude": -0.002,
+        "longitude": -0.002
+      },
+      "types": [
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "primaryType": "french_restaurant",
+      "formattedAddress": "1 voie demo, 00000 Zone demo, France",
+      "businessStatus": "OPERATIONAL"
+    },
+    {
+      "id": "mock_resto_la_table",
+      "displayName": {
+        "text": "La Table Moderne",
+        "languageCode": "fr"
+      },
+      "location": {
+        "latitude": 0.0025,
+        "longitude": -0.0015
+      },
+      "types": [
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "primaryType": "restaurant",
+      "formattedAddress": "2 voie demo, 00000 Zone demo, France",
+      "businessStatus": "OPERATIONAL"
+    }
+  ]
+}

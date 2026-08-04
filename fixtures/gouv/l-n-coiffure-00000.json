@@ -1,0 +1,33 @@
+{
+  "results": [
+    {
+      "siren": "000000006",
+      "nom_complet": "L&N COIFFURE",
+      "nom_raison_sociale": "L&N COIFFURE",
+      "nature_juridique": "5499",
+      "activite_principale": "96.02A",
+      "date_creation": "2011-01-10",
+      "siege": {
+        "siret": "00000000600006",
+        "code_postal": "00000",
+        "activite_principale": "96.02A"
+      },
+      "matching_etablissements": [
+        {
+          "siret": "00000000600006",
+          "code_postal": "00000"
+        }
+      ],
+      "dirigeants": [
+        {
+          "nom": "MOREAU",
+          "prenoms": "NOA",
+          "qualite": "Gérante",
+          "type_dirigeant": "personne physique"
+        }
+      ],
+      "section_activite_principale": "S",
+      "etat_administratif": "A"
+    }
+  ]
+}

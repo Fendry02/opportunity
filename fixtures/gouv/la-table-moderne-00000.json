@@ -1,0 +1,33 @@
+{
+  "results": [
+    {
+      "siren": "000000008",
+      "nom_complet": "LA TABLE MODERNE",
+      "nom_raison_sociale": "LA TABLE MODERNE",
+      "nature_juridique": "5710",
+      "activite_principale": "56.10A",
+      "date_creation": "2018-12-03",
+      "siege": {
+        "siret": "00000000800008",
+        "code_postal": "00000",
+        "activite_principale": "56.10A"
+      },
+      "matching_etablissements": [
+        {
+          "siret": "00000000800008",
+          "code_postal": "00000"
+        }
+      ],
+      "dirigeants": [
+        {
+          "nom": "PETIT",
+          "prenoms": "ALEX",
+          "qualite": "Présidente",
+          "type_dirigeant": "personne physique"
+        }
+      ],
+      "section_activite_principale": "I",
+      "etat_administratif": "A"
+    }
+  ]
+}
