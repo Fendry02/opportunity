@@ -47,3 +47,4 @@ next-env.d.ts
 
 # plans et artefacts locaux de l'éditeur
 /nimbalyst-local
+/.nimbalyst
