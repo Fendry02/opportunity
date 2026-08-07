@@ -1,0 +1,50 @@
+name: Feature request
+description: Suggest a capability that does not exist yet.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please check the **Non-goals** section of the README first. Opportunity
+        deliberately has no accounts, no hosted backend, no LLM dependency, no
+        CRM, and no automated outreach. Requests in those directions will be
+        closed, not because they are bad ideas but because they are a different
+        product.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: >
+        Describe the situation you are in, not the solution you have in mind.
+        What are you trying to accomplish, and where does the tool get in the
+        way today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would like it to do
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you do instead today
+      description: Workarounds, other tools, manual steps.
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Compatibility with the project's constraints
+      description: >
+        Tick the ones your proposal respects. If it breaks one, say so and
+        explain why it is worth it — that is a legitimate argument, just make it
+        explicitly.
+      options:
+        - label: Works offline in mock mode (`MOCK_EXTERNAL=1`)
+        - label: Adds no billed API calls, or gates them behind an explicit action
+        - label: Needs no authentication or hosted service
+        - label: Honours opt-out signals

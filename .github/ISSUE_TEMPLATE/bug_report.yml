@@ -1,0 +1,75 @@
+name: Bug report
+description: Something behaves differently than documented.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please try to reproduce in mock mode (`MOCK_EXTERNAL=1`) first. If it
+        reproduces there, anyone can debug it without a Google key — which makes
+        a fix far more likely.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you observed, and what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. npm run dev
+        2. Search for "…" with a radius of …
+        3. Click …
+    validations:
+      required: true
+
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Mode
+      options:
+        - "Mock (MOCK_EXTERNAL=1)"
+        - "Real Google Places (MOCK_EXTERNAL=0)"
+        - "Both"
+    validations:
+      required: true
+
+  - type: input
+    id: node
+    attributes:
+      label: Node version
+      description: Output of `node -v`.
+      placeholder: v22.11.0
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: OS
+      placeholder: macOS 15.1 / Ubuntu 24.04 / Windows 11
+    validations:
+      required: true
+
+  - type: textarea
+    id: checks
+    attributes:
+      label: Output of the verification commands
+      description: >
+        Paste any failures from `npm run lint`, `npm run typecheck`,
+        `npm test`, `npm run db:check`. Leave empty if they all pass.
+      render: shell
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: >
+        Server console and/or browser console. **Redact any API key** before
+        pasting.
+      render: shell

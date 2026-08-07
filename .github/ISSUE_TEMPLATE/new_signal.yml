@@ -1,0 +1,78 @@
+name: Propose a scoring signal
+description: Suggest a new website defect (or strength) that should affect a prospect's score.
+labels: ["scoring", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is the most useful contribution to the project. Anyone who has sold
+        a website redesign knows a tell that Opportunity does not look for yet.
+
+        Scoring lives in `lib/scoring.ts` and detection in
+        `lib/analyzer/signals.ts` — see the recipe in
+        [CONTRIBUTING.md](../../CONTRIBUTING.md) if you want to implement it
+        yourself.
+
+  - type: input
+    id: signal
+    attributes:
+      label: The signal
+      placeholder: "Contact phone number is an image instead of text"
+    validations:
+      required: true
+
+  - type: textarea
+    id: commercial
+    attributes:
+      label: Why it matters commercially
+      description: >
+        What does the business actually lose? This becomes the sentence shown in
+        the diagnostic panel and in the generated brief, so aim it at a
+        salesperson rather than a developer.
+      placeholder: >
+        Nobody can tap to call from a phone, and it is invisible to search
+        engines — every mobile visitor who wanted to call is lost.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: direction
+    attributes:
+      label: Direction
+      options:
+        - "Defect — raises the opportunity score"
+        - "Strength — lowers it (attractiveness bonus)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: detection
+    attributes:
+      label: How to detect it reliably
+      description: >
+        Be concrete, and be honest about false positives. A signal that
+        misfires on a third of sites is worse than no signal, because it erodes
+        trust in the whole score.
+      placeholder: >
+        No `tel:` link anywhere in the page, but an `<img>` whose alt or
+        filename matches /t[ée]l|phone|contact/.
+    validations:
+      required: true
+
+  - type: input
+    id: weight
+    attributes:
+      label: Suggested weight
+      description: >
+        Rough points out of 100, for comparison. Existing anchors: no website at
+        all is 80 (`NO_SITE_BASE`), and all defects together are capped at 85
+        (`MAX_DEFECTS`).
+      placeholder: "4"
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Real examples
+      description: >
+        Public URLs where this is visible, if you have them. Helps build a
+        fixture under `fixtures/site/`.
