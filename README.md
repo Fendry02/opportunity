@@ -66,10 +66,15 @@ npm run dev
 Ouvrez <http://localhost:3000> et cliquez sur **Lancer le balayage**.
 
 `.env.local.example` positionne `MOCK_EXTERNAL=1`. Dans ce mode, l'application
-lit [`fixtures/`](fixtures/) et ne fait **aucun appel réseau** — vous obtenez
-une démo complète sur Tours, avec dix entreprises fictives, sans clé Google et
-sans dépenser un centime. Tout ce qui suit à propos de Google Places ne compte
-qu'une fois ce drapeau désactivé.
+lit [`fixtures/`](fixtures/) et **ne fait aucun appel sortant côté serveur** —
+vous obtenez une démo complète sur Tours, avec dix entreprises fictives, sans
+clé Google et sans dépenser un centime. Tout ce qui suit à propos de Google
+Places ne compte qu'une fois ce drapeau désactivé.
+
+Seule exception, et elle est côté navigateur : les tuiles du fond de carte sont
+chargées depuis OpenFreeMap. Elles ne passent pas par `cachedFetch()` et ne sont
+donc pas coupées par le mode mock. C'est gratuit et sans clé, mais ce n'est pas
+hors ligne.
 
 ## Le résultat
 
@@ -231,20 +236,22 @@ Validez la clé avec un seul appel avant de lancer un vrai balayage :
 npm run places:smoke -- "plombier à Tours"
 ```
 
-### Optionnel : fond de carte Google Maps
+## Le fond de carte
 
-Pour une installation locale avec la couche Google Maps officielle à la place
-d'OpenStreetMap :
+La carte est rendue par [MapLibre GL](https://maplibre.org/) sur des tuiles
+vectorielles [OpenFreeMap](https://openfreemap.org/), style Positron —
+gratuit, sans compte, sans clé d'API et sans quota. Aucune configuration.
 
-```bash
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=$GOOGLE_PLACES_API_KEY
-```
+Le style est ajusté au chargement plutôt qu'embarqué dans le dépôt
+([`lib/map/style.ts`](lib/map/style.ts)) : quelques surcharges nommées
+atténuent les libellés de quartier et remontent le contraste de la voirie, pour
+que les rues restent suivables sous un amas de pins. Si OpenFreeMap renomme une
+couche, la surcharge correspondante devient inopérante — on perd un réglage,
+jamais la carte.
 
-`NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` est visible depuis le navigateur par
-construction — l'API JavaScript Maps s'exécute côté client. Restreignez cette
-clé dans Google Cloud à `http://localhost:3000/*` et à l'API JavaScript Maps.
-Laissée vide, Opportunity retombe sur la couche OpenStreetMap France (celle des
-captures ci-dessus).
+Le fond est délibérément gris et neutre : les pastilles de score sont rouges et
+orangées, et un fond coloré entre en concurrence chromatique avec elles dès
+qu'un balayage est dense.
 
 ## Scripts
 
@@ -293,6 +300,7 @@ Les frontières qui gardent le projet peu coûteux et testable :
 | Google Places Details | Site web, téléphone, note, horaires | 30 jours |
 | Sites des prospects | Signaux techniques et de contenu | 7 jours |
 | `recherche-entreprises.api.gouv.fr` | Enrichissement entreprise (SIREN, dirigeants) | 90 jours |
+| `tiles.openfreemap.org` | Tuiles vectorielles du fond de carte | — (chargé par le navigateur) |
 
 ## Feuille de route
 

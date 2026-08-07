@@ -25,7 +25,7 @@ const LAST_SEARCH_KEY = "opportunity:last-search";
 
 const POLL_INTERVAL_MS = 1500;
 
-// Leaflet accède à `window` dès l'import : jamais de rendu serveur.
+// MapLibre touche à `window` et à WebGL dès l'import : jamais de rendu serveur.
 const ResultsMap = dynamic(() => import("./ResultsMap").then((m) => m.ResultsMap), {
   ssr: false,
   loading: () => (

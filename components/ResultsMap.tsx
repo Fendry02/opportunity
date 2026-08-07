@@ -1,163 +1,91 @@
 "use client";
 
-import L from "leaflet";
+import {
+  type GeoJSONSource,
+  MapLibreMap,
+  Marker,
+  NavigationControl,
+} from "maplibre-gl";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Circle, MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
+import { circleBounds, circlePolygon } from "@/lib/map/circle";
+import { loadMapStyle } from "@/lib/map/style";
 import { TIER_COLOR, scoreTier } from "@/lib/scoring";
 import type { ProspectSummary } from "@/lib/types";
 
 /**
- * Carte des prospects.
+ * Carte des prospects, sur fond vectoriel OpenFreeMap Positron.
  *
- * Deux précautions liées à Leaflet :
- *  - les marqueurs sont des `L.divIcon` en CSS pur, ce qui évite le bug
- *    classique des images d'icônes cassées par le bundler ;
- *  - `MapContainer` n'est jamais remonté : tout changement de centre passe
- *    par `useMap()` dans un composant enfant.
+ * Le fond est gris neutre par choix : les pins de score sont rouges et
+ * orangés, et l'ancien fond OSM HOT avait des routes saumon de la même famille
+ * chromatique — les pastilles s'y noyaient dès qu'un balayage était dense.
  *
- * Tuiles OSM France HOT : plus lisibles en ville dense que le fond CARTO
- * Positron, trop pâle quand beaucoup de pins se superposent.
+ * Deux précautions liées à MapLibre :
+ *  - les marqueurs sont des éléments DOM en CSS pur, ce qui évite les icônes
+ *    cassées par le bundler et permet de réutiliser `.score-pin` tel quel ;
+ *  - la carte n'est créée qu'une fois : tout changement de cadrage passe par
+ *    l'instance conservée dans `mapRef`, jamais par un remontage.
+ *
+ * `maplibre-gl` est épinglé en ^5 volontairement. En 6.2.0, la carte se crée
+ * sans erreur — canvas, contrôles et style chargés, source résolue — puis ne
+ * demande jamais une seule tuile et n'émet aucun événement `error` : écran
+ * blanc silencieux. Vérifié aussi hors React, avec le style amont non modifié,
+ * en dev comme en build de production. Ne remonter en 6 qu'après avoir
+ * constaté des tuiles qui s'affichent.
  */
 
-const FRANCE_CENTER: [number, number] = [46.6, 2.2];
-const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+const FRANCE_CENTER: [number, number] = [2.2, 46.6];
+const FRANCE_ZOOM = 5;
 
-declare global {
-  interface Window {
-    google?: {
-      maps?: {
-        Circle: new (options: Record<string, unknown>) => GoogleCircle;
-        event: { removeListener: (listener: GoogleListener) => void };
-        LatLngBounds: new () => GoogleBounds;
-        Map: new (
-          element: HTMLElement,
-          options: Record<string, unknown>,
-        ) => GoogleMapInstance;
-        Marker: new (options: Record<string, unknown>) => GoogleMarker;
-        SymbolPath: { CIRCLE: number };
-      };
-    };
-    __opportunityGoogleMapsInit?: () => void;
-    __opportunityGoogleMapsPromise?: Promise<void>;
-  }
+/** Marge intérieure du recadrage, en pixels. */
+const FIT_PADDING = 24;
+
+/**
+ * Fraction de la vue conservée pour juger qu'un prospect est « visible ».
+ * Un pin collé au bord est techniquement dans le cadre mais illisible : on
+ * recentre quand même. Reprend le `pad(-0.1)` de l'implémentation Leaflet.
+ */
+const VISIBLE_INSET = 0.1;
+
+function pinColor(prospect: ProspectSummary): string {
+  if (prospect.optOut) return "#9ca3af";
+  if (prospect.score === null) return "#d1d5db";
+  return TIER_COLOR[prospect.tier ?? scoreTier(prospect.score)];
 }
 
-type GoogleListener = object;
-type GoogleBounds = {
-  extend: (point: { lat: number; lng: number }) => void;
-};
-type GoogleCircle = {
-  getBounds: () => GoogleBounds | null;
-  setMap: (map: GoogleMapInstance | null) => void;
-};
-type GoogleMapInstance = {
-  fitBounds: (bounds: GoogleBounds, padding?: number) => void;
-  panTo: (point: { lat: number; lng: number }) => void;
-};
-type GoogleMarker = {
-  addListener: (event: string, handler: () => void) => GoogleListener;
-  setMap: (map: GoogleMapInstance | null) => void;
-};
-
-function loadGoogleMaps(apiKey: string): Promise<void> {
-  if (window.google?.maps) return Promise.resolve();
-  if (window.__opportunityGoogleMapsPromise) {
-    return window.__opportunityGoogleMapsPromise;
-  }
-
-  window.__opportunityGoogleMapsPromise = new Promise((resolve, reject) => {
-    window.__opportunityGoogleMapsInit = () => resolve();
-
-    const script = document.createElement("script");
-    script.src =
-      "https://maps.googleapis.com/maps/api/js" +
-      `?key=${encodeURIComponent(apiKey)}` +
-      "&v=weekly&loading=async&callback=__opportunityGoogleMapsInit";
-    script.async = true;
-    script.defer = true;
-    script.onerror = () => reject(new Error("Google Maps n'a pas chargé"));
-    document.head.appendChild(script);
-  });
-
-  return window.__opportunityGoogleMapsPromise;
-}
-
-function pinIcon(prospect: ProspectSummary, selected: boolean): L.DivIcon {
-  // Un prospect écarté n'a pas de score : pin neutre et barré.
-  const color = prospect.optOut
-    ? "#9ca3af"
-    : prospect.score === null
-      ? "#d1d5db"
-      : TIER_COLOR[prospect.tier ?? scoreTier(prospect.score)];
+function pinLabel(prospect: ProspectSummary): string {
   // SVG inline plutôt qu'un caractère : `⃠` est une marque combinante, elle ne
   // se rend pas de la même façon d'un système à l'autre.
-  const label = prospect.optOut
-    ? `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M3.8 3.8l8.4 8.4"/></svg>`
-    : prospect.score === null
-      ? "…"
-      : String(prospect.score);
-
-  return L.divIcon({
-    className: "",
-    html: `<div class="score-pin${selected ? " score-pin--selected" : ""}" style="background:${color}">${label}</div>`,
-    iconSize: [26, 26],
-    iconAnchor: [13, 13],
-  });
+  if (prospect.optOut) {
+    return '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M3.8 3.8l8.4 8.4"/></svg>';
+  }
+  return prospect.score === null ? "…" : String(prospect.score);
 }
 
-/** Petite croix indigo au centre du rayon. */
-function centerIcon(): L.DivIcon {
-  return L.divIcon({
-    className: "",
-    html: '<div class="search-center" title="Point de départ"></div>',
-    iconSize: [12, 12],
-    iconAnchor: [6, 6],
-  });
+function pinTitle(prospect: ProspectSummary): string {
+  return prospect.optOut
+    ? `${prospect.name} — écarté (${prospect.optOut})`
+    : `${prospect.name} — ${prospect.score ?? "…"}/100`;
 }
 
-/** Recentre la carte quand la zone de recherche change, sans la remonter. */
-function ViewController({
-  center,
-  radiusM,
-}: {
-  center: { lat: number; lng: number } | null;
-  radiusM: number | null;
-}) {
-  const map = useMap();
-  const lastKey = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (!center) return;
-    const key = `${center.lat},${center.lng},${radiusM}`;
-    if (lastKey.current === key) return;
-    lastKey.current = key;
-
-    const bounds = L.latLng(center.lat, center.lng).toBounds(
-      (radiusM ?? 5000) * 2,
-    );
-    map.fitBounds(bounds, { padding: [24, 24] });
-  }, [center, radiusM, map]);
-
-  return null;
+function createPinElement(
+  prospect: ProspectSummary,
+  selected: boolean,
+): HTMLElement {
+  const el = document.createElement("div");
+  el.className = `score-pin${selected ? " score-pin--selected" : ""}`;
+  el.style.background = pinColor(prospect);
+  el.style.cursor = "pointer";
+  el.title = pinTitle(prospect);
+  el.innerHTML = pinLabel(prospect);
+  return el;
 }
 
-/** Amène le prospect sélectionné dans le champ de vision s'il en sort. */
-function SelectionController({
-  selected,
-}: {
-  selected: ProspectSummary | undefined;
-}) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (!selected) return;
-    const point = L.latLng(selected.lat, selected.lng);
-    if (!map.getBounds().pad(-0.1).contains(point)) {
-      map.panTo(point, { animate: true });
-    }
-  }, [selected, map]);
-
-  return null;
+/** Repère discret du point de départ, jamais confondu avec un prospect. */
+function createCenterElement(): HTMLElement {
+  const el = document.createElement("div");
+  el.className = "search-center";
+  el.title = "Point de départ";
+  return el;
 }
 
 export function ResultsMap({
@@ -173,238 +101,257 @@ export function ResultsMap({
   selectedId: string | null;
   onSelect: (id: string | null) => void;
 }) {
+  const hostRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<MapLibreMap | null>(null);
+  const markersRef = useRef<Marker[]>([]);
+  const centerMarkerRef = useRef<Marker | null>(null);
+  const lastViewKey = useRef<string | null>(null);
+  const [ready, setReady] = useState(false);
+  const [failed, setFailed] = useState(false);
+
   const selected = useMemo(
     () => results.find((r) => r.id === selectedId),
     [results, selectedId],
   );
 
-  if (GOOGLE_MAPS_API_KEY) {
-    return (
-      <GoogleResultsMap
-        apiKey={GOOGLE_MAPS_API_KEY}
-        center={center}
-        radiusM={radiusM}
-        results={results}
-        selected={selected}
-        selectedId={selectedId}
-        onSelect={onSelect}
-      />
-    );
-  }
+  // Le parent reconstruit `center` à chaque rendu (`{ lat, lng }` littéral),
+  // donc son identité change sans arrêt. On dépend des primitives pour que les
+  // effets ne se rejouent que sur un vrai déplacement de la zone.
+  const centerLat = center?.lat ?? null;
+  const centerLng = center?.lng ?? null;
 
-  return (
-    <MapContainer
-      center={FRANCE_CENTER}
-      zoom={6}
-      scrollWheelZoom
-      className="h-full w-full"
-    >
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, tiles &copy; <a href="https://www.openstreetmap.fr/">OSM France</a>'
-        maxZoom={20}
-      />
-
-      <ViewController center={center} radiusM={radiusM} />
-      <SelectionController selected={selected} />
-
-      {center && radiusM && (
-        <>
-          <Circle
-            center={[center.lat, center.lng]}
-            radius={radiusM}
-            pathOptions={{
-              color: "#4f46e5",
-              weight: 1,
-              opacity: 0.4,
-              fillOpacity: 0.03,
-            }}
-          />
-          {/* Repère du point de départ : indispensable dès qu'on part d'une
-              adresse précise plutôt que du centre-ville. */}
-          <Marker
-            position={[center.lat, center.lng]}
-            icon={centerIcon()}
-            interactive={false}
-            zIndexOffset={-1000}
-          />
-        </>
-      )}
-
-      {results.map((prospect) => (
-        <Marker
-          key={prospect.id}
-          position={[prospect.lat, prospect.lng]}
-          icon={pinIcon(prospect, prospect.id === selectedId)}
-          zIndexOffset={prospect.id === selectedId ? 1000 : 0}
-          eventHandlers={{
-            click: () => onSelect(prospect.id),
-          }}
-          title={
-            prospect.optOut
-              ? `${prospect.name} — écarté (${prospect.optOut})`
-              : `${prospect.name} — ${prospect.score ?? "…"}/100`
-          }
-        />
-      ))}
-    </MapContainer>
-  );
-}
-
-function GoogleResultsMap({
-  apiKey,
-  center,
-  radiusM,
-  results,
-  selected,
-  selectedId,
-  onSelect,
-}: {
-  apiKey: string;
-  center: { lat: number; lng: number } | null;
-  radiusM: number | null;
-  results: ProspectSummary[];
-  selected: ProspectSummary | undefined;
-  selectedId: string | null;
-  onSelect: (id: string | null) => void;
-}) {
-  const hostRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<GoogleMapInstance | null>(null);
-  const markersRef = useRef<GoogleMarker[]>([]);
-  const listenersRef = useRef<GoogleListener[]>([]);
-  const circleRef = useRef<GoogleCircle | null>(null);
-  const centerMarkerRef = useRef<GoogleMarker | null>(null);
-  const [loadFailed, setLoadFailed] = useState(false);
-  const [mapReady, setMapReady] = useState(false);
-
+  // `onSelect` change d'identité à chaque rendu du parent. Le garder dans une
+  // ref évite de reconstruire tous les marqueurs pour ça.
+  const onSelectRef = useRef(onSelect);
   useEffect(() => {
+    onSelectRef.current = onSelect;
+  }, [onSelect]);
+
+  // Création de la carte. Volontairement sans dépendances : elle ne doit
+  // exister qu'une fois pour toute la vie du composant.
+  useEffect(() => {
+    const host = hostRef.current;
+    // La garde `mapRef.current` est indispensable : sans elle, le double
+    // montage du mode strict crée deux cartes sur le même conteneur.
+    if (!host || mapRef.current) return;
+
+    const abort = new AbortController();
     let cancelled = false;
-    void loadGoogleMaps(apiKey)
-      .then(() => {
-        if (cancelled || !hostRef.current || mapRef.current) return;
-        const maps = window.google?.maps;
-        if (!maps) throw new Error("Google Maps indisponible");
-        mapRef.current = new maps.Map(hostRef.current, {
-          center: center ?? { lat: FRANCE_CENTER[0], lng: FRANCE_CENTER[1] },
-          clickableIcons: false,
-          fullscreenControl: false,
-          mapTypeControl: false,
-          streetViewControl: false,
-          zoom: center ? 15 : 6,
+
+    /**
+     * MapLibre lit la taille du conteneur à la construction. Créée sur un div
+     * encore à zéro — ce qui arrive, la carte étant construite après un `await`
+     * dans un conteneur flex —, la carte ne couvre aucune tuile, ne peint
+     * jamais et n'émet donc jamais `load` : écran blanc définitif, sans erreur.
+     * On attend une taille réelle avant de construire.
+     */
+    function whenSized(el: HTMLElement): Promise<void> {
+      if (el.clientWidth > 0 && el.clientHeight > 0) return Promise.resolve();
+      return new Promise((resolve) => {
+        const observer = new ResizeObserver(() => {
+          if (el.clientWidth > 0 && el.clientHeight > 0) {
+            observer.disconnect();
+            resolve();
+          }
         });
-        setMapReady(true);
+        observer.observe(el);
+        abort.signal.addEventListener("abort", () => {
+          observer.disconnect();
+          resolve();
+        });
+      });
+    }
+    // Référence locale : en mode strict, React monte, démonte puis remonte. Le
+    // nettoyage doit détruire la carte que *ce* passage a créée, et ne remettre
+    // `mapRef` à zéro que si elle y est encore. Utiliser `mapRef` directement
+    // fait annuler par un passage la carte vivante d'un autre — c'est ce qui
+    // rendait le chargement aléatoire.
+    let created: MapLibreMap | null = null;
+
+    void Promise.all([loadMapStyle(abort.signal), whenSized(host)])
+      .then(([style]) => {
+        if (cancelled || !hostRef.current) return;
+        const map = new MapLibreMap({
+          container: hostRef.current,
+          style,
+          center: FRANCE_CENTER,
+          zoom: FRANCE_ZOOM,
+          attributionControl: { compact: true },
+        });
+        created = map;
+        mapRef.current = map;
+        map.addControl(new NavigationControl({ showCompass: false }), "top-left");
+
+        map.on("error", (event) => {
+          // Une tuile manquante ne doit pas vider l'écran, mais sans cette
+          // trace une panne du fond laisse un cadre blanc inexplicable.
+          console.error("[carte]", event.error?.message ?? event);
+        });
+
+        // `load` a pu partir avant qu'on s'y abonne : tester l'état d'abord,
+        // sinon `ready` reste faux et plus rien ne se dessine.
+        if (map.loaded()) {
+          setReady(true);
+        } else {
+          map.once("load", () => {
+            if (!cancelled) setReady(true);
+          });
+        }
       })
-      .catch(() => {
-        if (!cancelled) setLoadFailed(true);
+      .catch((err: unknown) => {
+        // `AbortError` au démontage n'est pas une panne : ne pas afficher
+        // d'erreur pour un composant qui n'existe plus.
+        if (cancelled || (err instanceof Error && err.name === "AbortError")) {
+          return;
+        }
+        setFailed(true);
       });
 
     return () => {
       cancelled = true;
+      abort.abort();
+      created?.remove();
+      if (mapRef.current === created) mapRef.current = null;
+      // La carte détruite, tout ce qu'on y avait ajouté est parti avec elle.
+      markersRef.current = [];
+      centerMarkerRef.current = null;
+      lastViewKey.current = null;
     };
-  }, [apiKey, center]);
+  }, []);
 
+  // Cercle de rayon et repère du centre.
   useEffect(() => {
-    const maps = window.google?.maps;
     const map = mapRef.current;
-    if (!mapReady || !maps || !map) return;
+    if (!ready || !map) return;
 
-    for (const listener of listenersRef.current) {
-      maps.event.removeListener(listener);
+    const center =
+      centerLat === null || centerLng === null
+        ? null
+        : { lat: centerLat, lng: centerLng };
+
+    const source = map.getSource("search-radius") as
+      | GeoJSONSource
+      | undefined;
+
+    if (!center || !radiusM) {
+      centerMarkerRef.current?.remove();
+      centerMarkerRef.current = null;
+      // Vider la source plutôt que retirer les couches : moins d'états
+      // possibles à raisonner au prochain balayage.
+      source?.setData({ type: "FeatureCollection", features: [] });
+      return;
     }
-    listenersRef.current = [];
 
-    for (const marker of markersRef.current) marker.setMap(null);
-    markersRef.current = [];
-    centerMarkerRef.current?.setMap(null);
-    circleRef.current?.setMap(null);
+    const polygon = circlePolygon(center, radiusM);
 
-    if (center && radiusM) {
-      circleRef.current = new maps.Circle({
-        center,
-        fillColor: "#4f46e5",
-        fillOpacity: 0.05,
-        map,
-        radius: radiusM,
-        strokeColor: "#4f46e5",
-        strokeOpacity: 0.45,
-        strokeWeight: 1,
+    if (source) {
+      source.setData(polygon);
+    } else {
+      map.addSource("search-radius", { type: "geojson", data: polygon });
+      map.addLayer({
+        id: "search-radius-fill",
+        type: "fill",
+        source: "search-radius",
+        paint: { "fill-color": "#4f46e5", "fill-opacity": 0.03 },
       });
-
-      centerMarkerRef.current = new maps.Marker({
-        clickable: false,
-        icon: {
-          fillColor: "#ffffff",
-          fillOpacity: 1,
-          path: maps.SymbolPath.CIRCLE,
-          scale: 5,
-          strokeColor: "#4f46e5",
-          strokeWeight: 3,
+      map.addLayer({
+        id: "search-radius-line",
+        type: "line",
+        source: "search-radius",
+        // 0.7 et non 0.4 comme du temps de Leaflet : sur le gris pâle de
+        // Positron, le trait d'origine était à peine perceptible.
+        paint: {
+          "line-color": "#4f46e5",
+          "line-width": 1,
+          "line-opacity": 0.7,
         },
-        map,
-        position: center,
-        zIndex: 0,
       });
-
-      const bounds = circleRef.current.getBounds();
-      if (bounds) map.fitBounds(bounds, 32);
     }
+
+    if (!centerMarkerRef.current) {
+      centerMarkerRef.current = new Marker({
+        element: createCenterElement(),
+        anchor: "center",
+      }).setLngLat([center.lng, center.lat]);
+      centerMarkerRef.current.addTo(map);
+    } else {
+      centerMarkerRef.current.setLngLat([center.lng, center.lat]);
+    }
+  }, [centerLat, centerLng, radiusM, ready]);
+
+  // Recadrage quand la zone de recherche change. La garde évite de recadrer —
+  // et donc d'annuler la navigation manuelle de l'utilisateur — quand ni le
+  // centre ni le rayon n'ont bougé.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!ready || !map || centerLat === null || centerLng === null || !radiusM) {
+      return;
+    }
+    const center = { lat: centerLat, lng: centerLng };
+
+    const key = `${center.lat},${center.lng},${radiusM}`;
+    if (lastViewKey.current === key) return;
+    lastViewKey.current = key;
+
+    map.fitBounds(circleBounds(center, radiusM), { padding: FIT_PADDING });
+  }, [centerLat, centerLng, radiusM, ready]);
+
+  // Marqueurs de prospects.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!ready || !map) return;
+
+    for (const marker of markersRef.current) marker.remove();
+    markersRef.current = [];
 
     for (const prospect of results) {
-      const selectedPin = prospect.id === selectedId;
-      const marker = new maps.Marker({
-        icon: {
-          fillColor: pinColor(prospect),
-          fillOpacity: 1,
-          path: maps.SymbolPath.CIRCLE,
-          scale: selectedPin ? 15 : 13,
-          strokeColor: "#ffffff",
-          strokeWeight: selectedPin ? 3 : 2,
-        },
-        label: {
-          color: "#ffffff",
-          fontSize: "11px",
-          fontWeight: "700",
-          text: pinLabel(prospect),
-        },
-        map,
-        position: { lat: prospect.lat, lng: prospect.lng },
-        title: prospect.optOut
-          ? `${prospect.name} — écarté (${prospect.optOut})`
-          : `${prospect.name} — ${prospect.score ?? "…"}/100`,
-        zIndex: selectedPin ? 1000 : prospect.score ?? 1,
+      const isSelected = prospect.id === selectedId;
+      const element = createPinElement(prospect, isSelected);
+      element.addEventListener("click", (event) => {
+        // Sans ça, MapLibre traite aussi le clic comme un clic sur la carte.
+        event.stopPropagation();
+        onSelectRef.current(prospect.id);
       });
-      listenersRef.current.push(
-        marker.addListener("click", () => onSelect(prospect.id)),
-      );
+      // Le pin sélectionné doit passer devant ses voisins qui se chevauchent.
+      element.style.zIndex = isSelected ? "1000" : String(prospect.score ?? 1);
+
+      const marker = new Marker({ element, anchor: "center" })
+        .setLngLat([prospect.lng, prospect.lat])
+        .addTo(map);
       markersRef.current.push(marker);
     }
-  }, [center, mapReady, onSelect, radiusM, results, selectedId]);
+  }, [ready, results, selectedId]);
 
+  // Amène le prospect sélectionné dans le champ de vision s'il en sort.
   useEffect(() => {
-    if (!selected || !mapRef.current) return;
-    mapRef.current.panTo({ lat: selected.lat, lng: selected.lng });
-  }, [selected]);
+    const map = mapRef.current;
+    if (!ready || !map || !selected) return;
 
-  if (loadFailed) {
+    const bounds = map.getBounds();
+    const west = bounds.getWest();
+    const east = bounds.getEast();
+    const south = bounds.getSouth();
+    const north = bounds.getNorth();
+    const insetLng = (east - west) * VISIBLE_INSET;
+    const insetLat = (north - south) * VISIBLE_INSET;
+
+    const visible =
+      selected.lng > west + insetLng &&
+      selected.lng < east - insetLng &&
+      selected.lat > south + insetLat &&
+      selected.lat < north - insetLat;
+
+    if (!visible) map.panTo([selected.lng, selected.lat]);
+  }, [ready, selected]);
+
+  if (failed) {
     return (
       <div className="flex h-full items-center justify-center px-6 text-center text-sm text-app-muted">
-        Google Maps n&apos;a pas chargé. Vérifiez que Maps JavaScript API est
-        activée sur la clé locale.
+        Le fond de carte n&apos;a pas chargé. Vérifiez votre connexion : les
+        tuiles viennent d&apos;OpenFreeMap.
       </div>
     );
   }
 
   return <div ref={hostRef} className="h-full w-full" />;
-}
-
-function pinColor(prospect: ProspectSummary): string {
-  if (prospect.optOut) return "#9ca3af";
-  if (prospect.score === null) return "#d1d5db";
-  return TIER_COLOR[prospect.tier ?? scoreTier(prospect.score)];
-}
-
-function pinLabel(prospect: ProspectSummary): string {
-  if (prospect.optOut) return "!";
-  if (prospect.score === null) return "…";
-  return String(prospect.score);
 }

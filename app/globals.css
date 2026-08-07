@@ -104,13 +104,27 @@ body {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--app-accent) 18%, transparent);
 }
 
-/* Attribution CARTO / Leaflet, discrète. */
-.leaflet-container {
+/* Carte MapLibre : elle doit se fondre dans l'app, pas ressembler à un widget
+   embarqué. Attribution OpenFreeMap discrète mais toujours présente — elle est
+   obligatoire. */
+.maplibregl-map {
   font-family: inherit;
   background: #f2f2f2;
 }
 
-.leaflet-control-attribution {
+.maplibregl-ctrl-attrib {
   font-size: 10px;
   color: var(--app-muted);
+}
+
+.maplibregl-ctrl-attrib a {
+  color: inherit;
+}
+
+/* Contrôle de zoom aligné sur les surfaces de l'app plutôt que sur le thème
+   par défaut de MapLibre. */
+.maplibregl-ctrl-group {
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-app);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
 }
