@@ -7,8 +7,8 @@
         "languageCode": "fr"
       },
       "location": {
-        "latitude": -0.002,
-        "longitude": -0.002
+        "latitude": 47.3859,
+        "longitude": 0.687
       },
       "types": [
         "restaurant",
@@ -17,7 +17,7 @@
         "establishment"
       ],
       "primaryType": "french_restaurant",
-      "formattedAddress": "1 voie demo, 00000 Zone demo, France",
+      "formattedAddress": "21 rue Nationale, 37000 Tours, France",
       "businessStatus": "OPERATIONAL"
     },
     {
@@ -27,8 +27,8 @@
         "languageCode": "fr"
       },
       "location": {
-        "latitude": 0.0025,
-        "longitude": -0.0015
+        "latitude": 47.3904,
+        "longitude": 0.6875
       },
       "types": [
         "restaurant",
@@ -37,7 +37,7 @@
         "establishment"
       ],
       "primaryType": "restaurant",
-      "formattedAddress": "2 voie demo, 00000 Zone demo, France",
+      "formattedAddress": "7 rue Bretonneau, 37000 Tours, France",
       "businessStatus": "OPERATIONAL"
     }
   ]

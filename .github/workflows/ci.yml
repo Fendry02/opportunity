@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      # Aucun appel réseau externe : le CI lit fixtures/ et ne consomme
+      # jamais de quota Google Places.
+      MOCK_EXTERNAL: "1"
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      # better-sqlite3 est un module natif : npm ci le compile ou récupère
+      # un binaire préconstruit selon la version de Node.
+      - run: npm ci
+
+      - run: npm run lint
+
+      - run: npm run typecheck
+
+      - run: npm test
+
+      # Vérifie le schéma SQLite, le mode WAL, le cache et les TTL. Le script
+      # crée lui-même sa base jetable via mkdtemp et n'ouvre aucune connexion
+      # réseau, malgré le MOCK_EXTERNAL=0 qu'il se donne en interne.
+      - run: npm run db:check
+
+      - run: npm run build
+
+# `npm run places:smoke` est volontairement absent : il exige une vraie clé
+# Google et consomme du quota facturé.

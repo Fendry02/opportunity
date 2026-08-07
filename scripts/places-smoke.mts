@@ -2,7 +2,7 @@
  * Validation de la clé Google et des field masks avec le minimum d'appels
  * facturés : UNE recherche (SKU Pro) + UN détail (SKU Enterprise).
  *
- *   npx tsx scripts/places-smoke.mts "plombier à Zone demo"
+ *   npx tsx scripts/places-smoke.mts "plombier à Tours"
  *
  * Les deux réponses partent en cache : relancer la commande est gratuit.
  */
@@ -16,9 +16,9 @@ import {
 import { geoSlug, geocode } from "../lib/geocode";
 import { isMockMode } from "../lib/cache";
 
-const query = process.argv[2] ?? "plombier à Zone demo";
+const query = process.argv[2] ?? "plombier à Tours";
 const [subject, cityFromQuery] = query.split(" à ");
-const city = process.argv[3] ?? cityFromQuery?.trim() ?? "Zone demo";
+const city = process.argv[3] ?? cityFromQuery?.trim() ?? "Tours";
 // En mode mock, la fixture suit la convention du pipeline : <sujet>-<ville>.json
 const fixture = `${geoSlug(subject ?? query)}-${geoSlug(city)}.json`;
 

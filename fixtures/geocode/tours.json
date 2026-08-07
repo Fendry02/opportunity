@@ -7,26 +7,25 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          0,
-          0
+          0.689,
+          47.3879
         ]
       },
       "properties": {
-        "label": "Zone demo",
+        "label": "Tours",
         "score": 0.96,
-        "id": "demo-zone",
+        "id": "37261",
         "type": "municipality",
-        "name": "Zone demo",
-        "postcode": "00000",
-        "citycode": "demo-zone",
-        "city": "Zone demo",
-        "context": "zone fictive",
-        "population": 0
+        "name": "Tours",
+        "postcode": "37000",
+        "citycode": "37261",
+        "context": "37, Indre-et-Loire, Centre-Val de Loire",
+        "population": 137087
       }
     }
   ],
   "attribution": "BAN",
   "licence": "ETALAB-2.0",
-  "query": "Zone demo",
+  "query": "Tours",
   "limit": 1
 }

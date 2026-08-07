@@ -26,7 +26,20 @@ Deux comportements par défaut, volontaires :
 - **secteur sans fixture `places_search`** → `{"places": []}` : on peut cocher
   n'importe quel secteur du formulaire sans erreur.
 
-## Jeu de données de démonstration (Zone demo)
+## Jeu de données de démonstration (Tours)
+
+Le jeu est centré sur **Tours** (47.3879 / 0.689, place Jean Jaurès) et
+`NEXT_PUBLIC_DEFAULT_CITY=Tours` préremplit le formulaire. Les coordonnées et
+les noms de rues sont réels, pour que les tuiles de la carte affichent une vraie
+ville : le jeu était auparavant centré sur `[0, 0]`, en pleine mer, ce qui
+donnait une carte vide.
+
+Tout le reste est **fictif** — raisons sociales, numéros de téléphone, SIREN /
+SIRET, dirigeants, notes et avis. Aucune entreprise réelle n'est décrite ici, et
+les numéros de rue ne correspondent à aucun établissement existant.
+
+Les positions relatives sont ce qui compte : les offsets par rapport au centre
+sont calibrés pour qu'un rayon de 1 km retienne 10 prospects et en écarte 2.
 
 | Prospect | Site | Ce qu'il illustre |
 |---|---|---|

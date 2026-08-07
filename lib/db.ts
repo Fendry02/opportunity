@@ -161,7 +161,7 @@ function migrate(db: Database.Database): void {
   addColumnIfMissing(db, "businesses", "opt_out_marker", "TEXT");
   addColumnIfMissing(db, "businesses", "opt_out_source", "TEXT");
   // `label` est l'adresse complète saisie ; `city` sert à composer la requête
-  // Places (« plombier à Zone demo »), jamais depuis l'adresse brute saisie.
+  // Places (« plombier à Tours »), jamais depuis l'adresse brute saisie.
   addColumnIfMissing(db, "searches", "city", "TEXT");
 }
 

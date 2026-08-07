@@ -59,7 +59,7 @@ describe("vieux WordPress en latin-1 (restaurant-ancien.fr)", () => {
   it("décode les accents malgré l'absence d'UTF-8", async () => {
     const s = await analyzeSite("http://www.restaurant-ancien.fr/");
     assert.equal(s.reachable, true);
-    assert.match(s.title ?? "", /Restaurant à Zone demo/);
+    assert.match(s.title ?? "", /Restaurant à Tours/);
     assert.ok(
       s.headings.some((h) => h.includes("Galettes de blé noir")),
       `titres : ${s.headings.join(" | ")}`,

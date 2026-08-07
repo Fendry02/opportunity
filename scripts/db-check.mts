@@ -94,7 +94,7 @@ console.log("✓ purge des expirées + statistiques");
 // 4. Reprise au boot : une recherche `running` devient `error`.
 db.prepare(
   `INSERT INTO searches (label, lat, lng, radius_m, sectors_json, status)
-   VALUES ('Zone demo', 0, 0, 5000, '["plombier"]', 'running')`,
+   VALUES ('Tours', 47.3879, 0.689, 5000, '["plombier"]', 'running')`,
 ).run();
 db.close();
 // Vider le singleton force getDb() à rouvrir la base : c'est exactement ce que

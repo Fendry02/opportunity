@@ -9,13 +9,13 @@
       "date_creation": "2011-01-10",
       "siege": {
         "siret": "00000000600006",
-        "code_postal": "00000",
+        "code_postal": "37000",
         "activite_principale": "96.02A"
       },
       "matching_etablissements": [
         {
           "siret": "00000000600006",
-          "code_postal": "00000"
+          "code_postal": "37000"
         }
       ],
       "dirigeants": [

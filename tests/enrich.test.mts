@@ -172,9 +172,9 @@ describe("brief markdown", () => {
     sectorLabel: "Plombier",
     googleTypes: [],
     primaryType: "plumber",
-    lat: 0.001,
-    lng: 0.002,
-    address: "12 voie demo, 00000 Zone demo, France",
+    lat: 47.3899,
+    lng: 0.691,
+    address: "21 rue Marceau, 37000 Tours, France",
     phone: "01 00 00 00 00",
     websiteUrl: null,
     rating: 4.6,
@@ -221,7 +221,7 @@ describe("brief markdown", () => {
 
   it("personnalise la recommandation avec le métier et la ville", () => {
     const md = buildBrief(base);
-    assert.match(md, /« plombier \+ Zone demo »/);
+    assert.match(md, /« plombier \+ Tours »/);
   });
 
   it("n'émet que les recommandations correspondant aux défauts détectés", () => {

@@ -93,15 +93,11 @@ export function SearchWorkspace() {
         if (cancelled) return;
         setHistory(data.searches);
 
-        // Revenir d'une fiche pleine page ne doit pas ramener sur un écran
-        // vide : on rouvre la dernière recherche consultée, si elle existe
-        // toujours.
+        // Au démarrage, on ouvre la recherche la plus récente. Une ancienne
+        // valeur en sessionStorage peut pointer sur la démo et ramener à 0,0.
         setActiveId((current) => {
           if (current !== null) return current;
-          const saved = Number(
-            window.sessionStorage.getItem(LAST_SEARCH_KEY) ?? "",
-          );
-          return data.searches.some((s) => s.id === saved) ? saved : null;
+          return data.searches[0]?.id ?? null;
         });
       }
       if (quotaRes.ok) {
@@ -238,7 +234,6 @@ export function SearchWorkspace() {
             results={visible}
             selectedId={selectedId}
             onSelect={selectFromMap}
-            onOpen={setOpenedId}
           />
         </div>
 
