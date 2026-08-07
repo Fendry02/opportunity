@@ -1,56 +1,61 @@
 # Opportunity
 
-**Find the local businesses whose website is absent, broken or outdated — and walk into the meeting with the brief already written.**
+**Trouvez les entreprises locales dont le site est absent, cassé ou dépassé — et arrivez au rendez-vous avec le brief déjà rédigé.**
 
 [![CI](https://github.com/Fendry02/opportunity/actions/workflows/ci.yml/badge.svg)](https://github.com/Fendry02/opportunity/actions/workflows/ci.yml)
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
+[![Licence : AGPL v3](https://img.shields.io/badge/Licence-AGPL_v3-blue.svg)](LICENSE)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org)
 [![Node 22+](https://img.shields.io/badge/Node-22%2B-5FA04E)](https://nodejs.org)
 
-![Opportunity: sweep a city, rank prospects, open a diagnostic, export a brief](public/screenshots/demo.gif)
+![Opportunity : balayer une ville, classer les prospects, ouvrir un diagnostic, exporter un brief](public/screenshots/demo.gif)
 
-## Why
+## Pourquoi
 
-If you sell website redesigns, the hard part is not the pitch — it is finding the
-twenty businesses in your area whose site actually justifies the call. That means
-opening hundreds of tabs, squinting at each site on a phone, and guessing.
+Quand on vend des refontes de sites, le difficile n'est pas le pitch — c'est de
+trouver les vingt entreprises du secteur dont le site justifie vraiment l'appel.
+Concrètement : ouvrir des centaines d'onglets, plisser les yeux sur chaque site
+depuis un téléphone, et deviner.
 
-Opportunity does the squinting. It sweeps a radius, checks every business's web
-presence against a fixed list of defects, ranks them 0 to 100, and writes a
-Markdown brief you can read in the car before the meeting.
+Opportunity plisse les yeux à votre place. Il balaie un rayon, confronte la
+présence web de chaque entreprise à une liste fixe de défauts, les classe de 0 à
+100, et rédige un brief Markdown lisible dans la voiture avant le rendez-vous.
 
-It runs entirely on your machine. No account, no hosted backend, no LLM. The
-diagnosis comes from deterministic heuristics, public data, and a local SQLite
-cache you own.
+Tout tourne sur votre machine. Pas de compte, pas de backend hébergé, pas de
+LLM. Le diagnostic vient d'heuristiques déterministes, de données publiques et
+d'un cache SQLite local qui vous appartient.
 
 > [!IMPORTANT]
-> **Opportunity is France-focused.** Geocoding uses the French government's BAN
-> API (`api-adresse.data.gouv.fr`) and business enrichment uses
-> `recherche-entreprises.api.gouv.fr` — both cover France only. The interface is
-> in French. Everything else (scoring, site analysis, Google Places) is
-> country-agnostic, so adding another geocoder is the main work needed to use
-> this elsewhere. See [Roadmap](#roadmap).
+> **Opportunity est centré sur la France.** Le géocodage passe par l'API BAN de
+> l'État (`api-adresse.data.gouv.fr`) et l'enrichissement par
+> `recherche-entreprises.api.gouv.fr` — les deux ne couvrent que la France.
+> L'interface est en français. Tout le reste (score, analyse de site, Google
+> Places) est indépendant du pays : brancher un autre géocodeur est l'essentiel
+> du travail pour s'en servir ailleurs. Voir la [feuille de
+> route](#feuille-de-route).
 
-## What it does
+## Ce qu'il fait
 
-- Sweep around a city or a precise street address, with a configurable radius.
-- Cover several trades at once: plumbers, electricians, carpenters, restaurants,
-  hair salons, garages — the list is [one editable file](config/sectors.ts).
-- Score each business on commercial opportunity: no website, dead website, no
-  mobile viewport, weak SEO basics, obsolete tech, no contact form, missing Open
-  Graph tags, no favicon, heavy or slow pages.
-- Show prospects on a map with score-coloured pins and a synchronized sortable
-  list.
-- Open a prospect without leaving the map, inspect the score breakdown, then
-  export a Markdown brief ready for outreach.
-- Cache geocoding, Places, website fetches and enrichment in SQLite, so a
-  repeated search never spends quota twice.
-- **Honour opt-out signals** such as `pas de démarchage pour un site` before
-  scoring or briefing a business.
+- Balayer autour d'une ville ou d'une adresse précise, avec un rayon
+  configurable.
+- Couvrir plusieurs métiers d'un coup : plombiers, électriciens, menuisiers,
+  restaurants, coiffeurs, garages — la liste tient dans [un seul fichier
+  éditable](config/sectors.ts).
+- Noter chaque entreprise sur l'opportunité commerciale : pas de site, site
+  mort, pas de viewport mobile, bases SEO faibles, technologie obsolète, pas de
+  formulaire de contact, balises Open Graph manquantes, pas de favicon, pages
+  lourdes ou lentes.
+- Afficher les prospects sur une carte avec des pastilles colorées par score et
+  une liste triable synchronisée.
+- Ouvrir un prospect sans quitter la carte, inspecter le détail du score, puis
+  exporter un brief Markdown prêt pour la prise de contact.
+- Mettre en cache géocodage, Places, récupérations de sites et enrichissement
+  dans SQLite : une recherche relancée ne consomme jamais deux fois du quota.
+- **Respecter les refus de démarchage** du type `pas de démarchage pour un site`
+  avant de noter ou de briefer une entreprise.
 
-![The workspace: a 1 km sweep over Tours, ten prospects ranked by score, two excluded for opting out](public/screenshots/01-workspace.png)
+![L'espace de travail : un balayage de 1 km sur Tours, dix prospects classés par score, deux exclus pour refus de démarchage](public/screenshots/01-workspace.png)
 
-## Quick start
+## Démarrage rapide
 
 ```bash
 npm install
@@ -58,21 +63,21 @@ cp .env.local.example .env.local
 npm run dev
 ```
 
-Open <http://localhost:3000> and press **Lancer le balayage**.
+Ouvrez <http://localhost:3000> et cliquez sur **Lancer le balayage**.
 
-`.env.local.example` sets `MOCK_EXTERNAL=1`. In that mode the app reads from
-[`fixtures/`](fixtures/) and makes **no network calls at all** — you get a full
-working demo on Tours, with ten fictional businesses, without a Google key and
-without spending a cent. Everything below about Google Places only matters once
-you switch that flag off.
+`.env.local.example` positionne `MOCK_EXTERNAL=1`. Dans ce mode, l'application
+lit [`fixtures/`](fixtures/) et ne fait **aucun appel réseau** — vous obtenez
+une démo complète sur Tours, avec dix entreprises fictives, sans clé Google et
+sans dépenser un centime. Tout ce qui suit à propos de Google Places ne compte
+qu'une fois ce drapeau désactivé.
 
-## The output
+## Le résultat
 
-The point of the tool is this file. One click on **Brief Markdown** produces it
-for any prospect:
+Le tout est fait pour produire ce fichier. Un clic sur **Brief Markdown** le
+génère pour n'importe quel prospect :
 
 <details>
-<summary><b>Example brief — Restaurant Ancien, 85/100</b> (generated from the demo fixtures)</summary>
+<summary><b>Exemple de brief — Restaurant Ancien, 85/100</b> (généré depuis les fixtures de démo)</summary>
 
 ```markdown
 # Restaurant Ancien
@@ -129,186 +134,194 @@ _Non identifié._ Lancer l'enrichissement depuis la fiche, ou appeler en demanda
 
 </details>
 
-Each defect carries its own commercial rationale, because the number alone does
-not survive contact with a business owner.
+Chaque défaut porte son propre argument commercial, parce que le chiffre seul ne
+survit pas au contact d'un dirigeant.
 
 <p align="center">
-  <img src="public/screenshots/02-diagnostic.png" alt="Prospect panel: identity, then the scored diagnostic with a rationale per defect" width="620">
+  <img src="public/screenshots/02-diagnostic.png" alt="Panneau prospect : identité, puis le diagnostic chiffré avec un argument par défaut" width="620">
 </p>
 
-## How scoring works
+## Comment le score est calculé
 
-A business with no website, or an unreachable one, starts high — it is the most
-likely redesign conversation. An existing website is scored from visible defects
-and commercial signals.
+Une entreprise sans site, ou dont le site est injoignable, démarre haut — c'est
+la conversation de refonte la plus probable. Un site existant est noté à partir
+de ses défauts visibles et de signaux commerciaux.
 
-Main defects: no HTTPS; no mobile viewport; missing title, meta description, H1,
-sitemap or robots; obsolete or free builders (Facebook pages, Wix, e-monsite);
-no contact form; no Open Graph tags or favicon; stale copyright year; heavy or
-slow pages.
+Principaux défauts : pas de HTTPS ; pas de viewport mobile ; title, meta
+description, H1, sitemap ou robots manquants ; technologie obsolète ou
+constructeurs gratuits (pages Facebook, Wix, e-monsite) ; pas de formulaire de
+contact ; pas de balises Open Graph ni de favicon ; année de copyright figée ;
+pages lourdes ou lentes.
 
-Attractiveness bonuses consider reputation, review volume and phone
-availability — a business nobody searches for is a worse prospect than a busy
-one with a bad site.
+Les bonus d'attractivité tiennent compte de la réputation, du volume d'avis et
+de la disponibilité d'un téléphone — une entreprise que personne ne cherche est
+un moins bon prospect qu'une entreprise très demandée avec un mauvais site.
 
-All weights live in [`lib/scoring.ts`](lib/scoring.ts). Defects are capped
-collectively (`MAX_DEFECTS`) so no single signal can dominate a score.
+Tous les poids vivent dans [`lib/scoring.ts`](lib/scoring.ts). Les défauts sont
+plafonnés collectivement (`MAX_DEFECTS`) pour qu'aucun signal isolé ne domine un
+score.
 
-## What it costs to run
+## Ce que ça coûte à l'usage
 
-Nothing in mock mode. With `MOCK_EXTERNAL=0`, Opportunity hits two billed Google
-SKUs, chosen by its frozen field masks in
-[`lib/places/client.ts`](lib/places/client.ts):
+Rien en mode mock. Avec `MOCK_EXTERNAL=0`, Opportunity sollicite deux SKU Google
+facturés, déterminés par ses masques de champs figés dans
+[`lib/places/client.ts`](lib/places/client.ts) :
 
-| Call | SKU | Price (0–100k/month) | Free each month |
+| Appel | SKU | Prix (0–100k/mois) | Gratuit chaque mois |
 | --- | --- | ---: | ---: |
-| Sector search | Text Search **Pro** | $32.00 / 1,000 | 5,000 |
-| Prospect details | Place Details **Enterprise** | $20.00 / 1,000 | 1,000 |
+| Recherche par secteur | Text Search **Pro** | 32,00 $ / 1 000 | 5 000 |
+| Détail d'un prospect | Place Details **Enterprise** | 20,00 $ / 1 000 | 1 000 |
 
-Details land on Enterprise because the mask asks for `rating`,
-`userRatingCount` and `regularOpeningHours` — the signals the scoring needs.
-Search deliberately stays on Pro: no Enterprise field is ever allowed into the
-search mask.
+Les détails tombent en Enterprise parce que le masque demande `rating`,
+`userRatingCount` et `regularOpeningHours` — les signaux dont le score a besoin.
+La recherche reste délibérément en Pro : aucun champ Enterprise n'est jamais
+autorisé dans le masque de recherche.
 
-**A sweep retaining 100 prospects costs roughly $2.50** — about 100 Details
-calls plus a dozen Text Search calls. The monthly free allowance covers around
-**1,000 prospects before you are billed anything**.
+**Un balayage qui retient 100 prospects coûte environ 2,50 $** — une centaine
+d'appels Details plus une douzaine d'appels Text Search. L'enveloppe gratuite
+mensuelle couvre environ **1 000 prospects avant la moindre facturation**.
 
-Three guardrails keep it there:
+Trois garde-fous maintiennent ce niveau :
 
-- strict `X-Goog-FieldMask` values — changing them changes your bill;
-- a local daily ceiling via `PLACES_DAILY_CAP` (default 300);
-- SQLite caching, so re-running a search costs nothing.
+- des valeurs `X-Goog-FieldMask` strictes — les modifier modifie votre facture ;
+- un plafond quotidien local via `PLACES_DAILY_CAP` (300 par défaut) ;
+- le cache SQLite, qui rend gratuite une recherche relancée.
 
-Prices are Google's published USD list rates, checked 7 August 2026 against the
-[Google Maps Platform pricing page](https://developers.google.com/maps/billing-and-pricing/pricing);
-European accounts are billed in euros at Google's rate. Verify before relying on
-them.
+Les prix sont les tarifs publics de Google en dollars, vérifiés le 7 août 2026
+sur la [page de tarification Google Maps
+Platform](https://developers.google.com/maps/billing-and-pricing/pricing) ; les
+comptes européens sont facturés en euros au taux de Google. Vérifiez avant de
+vous y fier.
 
-## Ethics
+## Éthique
 
-Opportunity looks at **businesses, not people**, and only at what those
-businesses publish themselves. There is no personal data in the pipeline, no
-email harvesting, and no scraping beyond fetching public pages a browser would
-fetch anyway.
+Opportunity regarde des **entreprises, pas des personnes**, et uniquement ce que
+ces entreprises publient elles-mêmes. Aucune donnée personnelle dans le
+pipeline, aucune collecte d'e-mails, aucun scraping au-delà de pages publiques
+qu'un navigateur récupérerait de toute façon.
 
-Two rules are load-bearing:
+Deux règles sont structurantes :
 
-- **Opt-out is honoured.** A listing that signals it does not want to be
-  approached about a website — in its name or on its site — is excluded from
-  scoring and from brief generation ([`lib/opt-out.ts`](lib/opt-out.ts)). You
-  can see this in the demo: two of the twelve businesses are struck through.
-- **A brief is for a human to read.** The output is a document you review before
-  deciding whether to contact someone. Turning this into an automated emailing
-  machine is an explicit [non-goal](#non-goals).
+- **Le refus de démarchage est respecté.** Une fiche qui signale ne pas vouloir
+  être démarchée à propos d'un site — dans son nom ou sur son site — est exclue
+  du score et de la génération de brief ([`lib/opt-out.ts`](lib/opt-out.ts)).
+  C'est visible dans la démo : deux des douze entreprises sont barrées.
+- **Un brief est fait pour être lu par un humain.** La sortie est un document
+  que vous relisez avant de décider de contacter quelqu'un. En faire une machine
+  à e-mailing automatique est un [hors périmètre](#hors-périmètre) explicite.
 
-## Google Places setup
+## Configuration Google Places
 
-Only needed when switching `MOCK_EXTERNAL=0`.
+Nécessaire uniquement pour passer à `MOCK_EXTERNAL=0`.
 
-1. Create a Google Cloud project and attach billing.
-2. Enable **Places API (New)**. Do *not* enable the legacy Places API.
-3. Create an API key restricted to **Places API (New)**.
-4. Add it to `.env.local`:
+1. Créez un projet Google Cloud et rattachez-y une facturation.
+2. Activez **Places API (New)**. N'activez *pas* l'ancienne Places API.
+3. Créez une clé d'API restreinte à **Places API (New)**.
+4. Ajoutez-la dans `.env.local` :
 
 ```bash
-GOOGLE_PLACES_API_KEY=your_google_places_key
+GOOGLE_PLACES_API_KEY=votre_cle_google_places
 MOCK_EXTERNAL=0
 PLACES_DAILY_CAP=300
 ```
 
-Validate the key with a single call before running a real sweep:
+Validez la clé avec un seul appel avant de lancer un vrai balayage :
 
 ```bash
 npm run places:smoke -- "plombier à Tours"
 ```
 
-### Optional: Google Maps background
+### Optionnel : fond de carte Google Maps
 
-For a local setup with the official Google Maps layer instead of OpenStreetMap:
+Pour une installation locale avec la couche Google Maps officielle à la place
+d'OpenStreetMap :
 
 ```bash
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=$GOOGLE_PLACES_API_KEY
 ```
 
-`NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` is browser-visible by design — the Maps
-JavaScript API runs client-side. Restrict that key in Google Cloud to
-`http://localhost:3000/*` and to the Maps JavaScript API. Left empty,
-Opportunity falls back to the OpenStreetMap France layer (what the screenshots
-above show).
+`NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` est visible depuis le navigateur par
+construction — l'API JavaScript Maps s'exécute côté client. Restreignez cette
+clé dans Google Cloud à `http://localhost:3000/*` et à l'API JavaScript Maps.
+Laissée vide, Opportunity retombe sur la couche OpenStreetMap France (celle des
+captures ci-dessus).
 
 ## Scripts
 
-| Command | Purpose |
+| Commande | Rôle |
 | --- | --- |
-| `npm run dev` | Start the local app |
-| `npm run build` | Build for production |
-| `npm start` | Start the production build |
-| `npm test` | Unit tests, no network access |
-| `npm run typecheck` | TypeScript checks |
+| `npm run dev` | Démarrer l'application en local |
+| `npm run build` | Construire pour la production |
+| `npm start` | Démarrer le build de production |
+| `npm test` | Tests unitaires, sans accès réseau |
+| `npm run typecheck` | Vérifications TypeScript |
 | `npm run lint` | ESLint |
-| `npm run db:check` | Verify SQLite schema, WAL, cache and TTL behaviour |
-| `npm run places:smoke` | One real Places search + details call |
+| `npm run db:check` | Vérifier le schéma SQLite, le WAL, le cache et les TTL |
+| `npm run places:smoke` | Un vrai appel Places search + details |
 
-The database lives at `data/opportunity.db` and is git-ignored. Delete it to
-reset searches, cached responses and daily counters. Set `OPPORTUNITY_DB_PATH`
-to put it elsewhere.
+La base vit dans `data/opportunity.db` et est ignorée par git. Supprimez-la pour
+remettre à zéro recherches, réponses en cache et compteurs journaliers.
+Définissez `OPPORTUNITY_DB_PATH` pour la placer ailleurs.
 
 ## Architecture
 
 ```text
-app/            Next.js routes and API handlers
-components/     UI: search, map, list, toolbar, prospect panels
-config/         editable sectors and search defaults
-fixtures/       mock data for demos and tests
-lib/            business logic, cache, analyzers, scoring, enrichment
-scripts/        smoke checks and database validation
-tests/          node:test coverage for scoring, analyzer, memory, filters
+app/            routes Next.js et handlers d'API
+components/     UI : recherche, carte, liste, barre d'outils, fiches prospect
+config/         secteurs éditables et réglages de recherche par défaut
+fixtures/       données simulées pour les démos et les tests
+lib/            logique métier, cache, analyseurs, score, enrichissement
+scripts/        vérifications smoke et validation de la base
+tests/          couverture node:test du score, de l'analyseur, de la mémoire, des filtres
 ```
 
-Boundaries that keep this cheap and testable:
+Les frontières qui gardent le projet peu coûteux et testable :
 
-- `lib/` never imports React.
-- API routes validate input and delegate to `lib/`.
-- Components only talk to local API routes.
-- `cachedFetch()` in [`lib/cache.ts`](lib/cache.ts) is the **only** place that
-  performs an external fetch — which is what makes `MOCK_EXTERNAL=1` a complete
-  offline mode.
+- `lib/` n'importe jamais React.
+- Les routes d'API valident leur entrée et délèguent à `lib/`.
+- Les composants ne parlent qu'aux routes d'API locales.
+- `cachedFetch()` dans [`lib/cache.ts`](lib/cache.ts) est le **seul** endroit qui
+  effectue une requête externe — c'est ce qui fait de `MOCK_EXTERNAL=1` un mode
+  hors-ligne complet.
 
-## Data sources
+## Sources de données
 
-| Source | Purpose | Cache TTL |
+| Source | Rôle | TTL du cache |
 | --- | --- | --- |
-| `api-adresse.data.gouv.fr` | French geocoding (BAN) | 365 days |
-| Google Places Text Search | Local businesses by sector | 7 days |
-| Google Places Details | Website, phone, rating, opening hours | 30 days |
-| Prospect websites | Technical and content signals | 7 days |
-| `recherche-entreprises.api.gouv.fr` | Business enrichment (SIREN, officers) | 90 days |
+| `api-adresse.data.gouv.fr` | Géocodage français (BAN) | 365 jours |
+| Google Places Text Search | Entreprises locales par secteur | 7 jours |
+| Google Places Details | Site web, téléphone, note, horaires | 30 jours |
+| Sites des prospects | Signaux techniques et de contenu | 7 jours |
+| `recherche-entreprises.api.gouv.fr` | Enrichissement entreprise (SIREN, dirigeants) | 90 jours |
 
-## Roadmap
+## Feuille de route
 
-Not promises — the directions that would most improve the tool, in rough order:
+Pas des promesses — les directions qui amélioreraient le plus l'outil, dans un
+ordre approximatif :
 
-- **A pluggable geocoder**, so the app works outside France. This is the single
-  biggest limitation today.
-- More scoring signals. This is the easiest way to contribute — see the
-  [dedicated issue template](.github/ISSUE_TEMPLATE/new_signal.yml).
-- Export a whole sweep at once, not one brief at a time.
-- Track outreach status per prospect across sweeps.
+- **Un géocodeur enfichable**, pour que l'application fonctionne hors de France.
+  C'est de loin la plus grosse limite aujourd'hui.
+- Plus de signaux de score. C'est la façon la plus simple de contribuer — voir
+  le [gabarit d'issue dédié](.github/ISSUE_TEMPLATE/new_signal.yml).
+- Exporter un balayage entier d'un coup, plutôt qu'un brief à la fois.
+- Suivre l'état de la prise de contact par prospect, d'un balayage à l'autre.
 
-### Non-goals
+### Hors périmètre
 
-Stated so nobody wastes a pull request on them:
+Énoncé pour que personne ne gaspille une pull request dessus :
 
-- **No SaaS, no hosted version, no accounts.** It runs on your machine, on your
-  data, with your API key.
-- **No LLM.** The diagnosis is deterministic and reproducible; the same site
-  scores the same twice.
-- **No CRM.** It finds prospects; it is not where you manage them.
-- **No automated outreach.** No bulk email, no auto-dialling, no sequences.
-- **No scraping beyond public pages.** No logins, no paywalls, no personal data.
+- **Pas de SaaS, pas de version hébergée, pas de comptes.** Ça tourne sur votre
+  machine, sur vos données, avec votre clé d'API.
+- **Pas de LLM.** Le diagnostic est déterministe et reproductible : le même site
+  obtient deux fois le même score.
+- **Pas de CRM.** L'outil trouve des prospects ; il n'est pas là où vous les
+  gérez.
+- **Pas de prospection automatisée.** Ni e-mailing de masse, ni appels
+  automatiques, ni séquences.
+- **Pas de scraping au-delà des pages publiques.** Pas d'authentification, pas
+  de contenu payant, pas de données personnelles.
 
-## Verification
+## Vérification
 
 ```bash
 npm run lint
@@ -317,17 +330,19 @@ npm test
 npm run db:check
 ```
 
-CI runs all four plus `npm run build` on every pull request.
-`npm run places:smoke` is deliberately excluded: it needs a real key and spends
-quota.
+Le CI exécute ces quatre commandes plus `npm run build` sur chaque pull request.
+`npm run places:smoke` en est volontairement exclu : il exige une vraie clé et
+consomme du quota.
 
-## Contributing
+## Contribuer
 
-Bug reports, scoring signals and pull requests are welcome — see
-[CONTRIBUTING.md](CONTRIBUTING.md) for setup, the architecture invariants a
-reviewer will check, and recipes for adding a sector or a scoring signal.
+Rapports de bugs, signaux de score et pull requests sont les bienvenus — voir
+[CONTRIBUTING.md](CONTRIBUTING.md) pour l'installation, les invariants
+d'architecture qu'un relecteur vérifiera, et les recettes pour ajouter un
+secteur ou un signal de score.
 
-## License
+## Licence
 
-[GNU AGPL-3.0](LICENSE). You can use, modify and redistribute it freely; if you
-run a modified version as a network service, you must publish your changes.
+[GNU AGPL-3.0](LICENSE). Vous pouvez l'utiliser, le modifier et le redistribuer
+librement ; si vous exécutez une version modifiée comme service en réseau, vous
+devez publier vos modifications.

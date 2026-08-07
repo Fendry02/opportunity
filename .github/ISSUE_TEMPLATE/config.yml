@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Read the contributing guide first
+  - name: Lisez d'abord le guide de contribution
     url: https://github.com/Fendry02/opportunity/blob/main/CONTRIBUTING.md
-    about: Setup, architecture invariants, and recipes for adding a sector or a scoring signal.
+    about: Installation, invariants d'architecture, et recettes pour ajouter un secteur ou un signal de score.

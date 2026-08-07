@@ -1,78 +1,80 @@
-name: Propose a scoring signal
-description: Suggest a new website defect (or strength) that should affect a prospect's score.
+name: Proposer un signal de score
+description: Suggérer un nouveau défaut (ou atout) d'un site web qui devrait peser sur le score d'un prospect.
 labels: ["scoring", "enhancement"]
 body:
   - type: markdown
     attributes:
       value: |
-        This is the most useful contribution to the project. Anyone who has sold
-        a website redesign knows a tell that Opportunity does not look for yet.
+        C'est la contribution la plus utile au projet. Quiconque a déjà vendu
+        une refonte de site connaît un indice qu'Opportunity ne cherche pas
+        encore.
 
-        Scoring lives in `lib/scoring.ts` and detection in
-        `lib/analyzer/signals.ts` — see the recipe in
-        [CONTRIBUTING.md](../../CONTRIBUTING.md) if you want to implement it
-        yourself.
+        Le score vit dans `lib/scoring.ts` et la détection dans
+        `lib/analyzer/signals.ts` — voir la recette dans
+        [CONTRIBUTING.md](../../CONTRIBUTING.md) si vous voulez l'implémenter
+        vous-même.
 
   - type: input
     id: signal
     attributes:
-      label: The signal
-      placeholder: "Contact phone number is an image instead of text"
+      label: Le signal
+      placeholder: "Le numéro de téléphone est une image au lieu de texte"
     validations:
       required: true
 
   - type: textarea
     id: commercial
     attributes:
-      label: Why it matters commercially
+      label: Pourquoi ça compte commercialement
       description: >
-        What does the business actually lose? This becomes the sentence shown in
-        the diagnostic panel and in the generated brief, so aim it at a
-        salesperson rather than a developer.
+        Que perd réellement l'entreprise ? Cette réponse devient la phrase
+        affichée dans le panneau de diagnostic et dans le brief généré :
+        visez un commercial plutôt qu'un développeur.
       placeholder: >
-        Nobody can tap to call from a phone, and it is invisible to search
-        engines — every mobile visitor who wanted to call is lost.
+        Personne ne peut appuyer pour appeler depuis un téléphone, et c'est
+        invisible pour les moteurs de recherche — chaque visiteur mobile qui
+        voulait appeler est perdu.
     validations:
       required: true
 
   - type: dropdown
     id: direction
     attributes:
-      label: Direction
+      label: Sens
       options:
-        - "Defect — raises the opportunity score"
-        - "Strength — lowers it (attractiveness bonus)"
+        - "Défaut — augmente le score d'opportunité"
+        - "Atout — le diminue (bonus d'attractivité)"
     validations:
       required: true
 
   - type: textarea
     id: detection
     attributes:
-      label: How to detect it reliably
+      label: Comment le détecter de façon fiable
       description: >
-        Be concrete, and be honest about false positives. A signal that
-        misfires on a third of sites is worse than no signal, because it erodes
-        trust in the whole score.
+        Soyez concret, et honnête sur les faux positifs. Un signal qui se
+        déclenche à tort sur un tiers des sites est pire que pas de signal, car
+        il érode la confiance dans tout le score.
       placeholder: >
-        No `tel:` link anywhere in the page, but an `<img>` whose alt or
-        filename matches /t[ée]l|phone|contact/.
+        Aucun lien `tel:` dans la page, mais une `<img>` dont l'alt ou le nom de
+        fichier correspond à /t[ée]l|phone|contact/.
     validations:
       required: true
 
   - type: input
     id: weight
     attributes:
-      label: Suggested weight
+      label: Poids suggéré
       description: >
-        Rough points out of 100, for comparison. Existing anchors: no website at
-        all is 80 (`NO_SITE_BASE`), and all defects together are capped at 85
-        (`MAX_DEFECTS`).
+        Un ordre de grandeur en points sur 100, pour comparaison. Repères
+        existants : pas de site du tout vaut 80 (`NO_SITE_BASE`), et l'ensemble
+        des défauts est plafonné à 85 (`MAX_DEFECTS`).
       placeholder: "4"
 
   - type: textarea
     id: examples
     attributes:
-      label: Real examples
+      label: Exemples réels
       description: >
-        Public URLs where this is visible, if you have them. Helps build a
-        fixture under `fixtures/site/`.
+        Des URL publiques où c'est visible, si vous en avez. Ça aide à
+        construire une fixture sous `fixtures/site/`.

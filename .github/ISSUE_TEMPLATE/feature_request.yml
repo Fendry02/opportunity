@@ -1,50 +1,50 @@
-name: Feature request
-description: Suggest a capability that does not exist yet.
+name: Demande de fonctionnalité
+description: Proposer une capacité qui n'existe pas encore.
 labels: ["enhancement"]
 body:
   - type: markdown
     attributes:
       value: |
-        Please check the **Non-goals** section of the README first. Opportunity
-        deliberately has no accounts, no hosted backend, no LLM dependency, no
-        CRM, and no automated outreach. Requests in those directions will be
-        closed, not because they are bad ideas but because they are a different
-        product.
+        Consultez d'abord la section **Hors périmètre** du README. Opportunity
+        n'a délibérément ni comptes, ni backend hébergé, ni dépendance à un LLM,
+        ni CRM, ni prospection automatisée. Les demandes qui vont dans ces
+        directions seront fermées — non parce que ce sont de mauvaises idées,
+        mais parce que c'est un autre produit.
 
   - type: textarea
     id: problem
     attributes:
-      label: The problem
+      label: Le problème
       description: >
-        Describe the situation you are in, not the solution you have in mind.
-        What are you trying to accomplish, and where does the tool get in the
-        way today?
+        Décrivez la situation dans laquelle vous êtes, pas la solution que vous
+        avez en tête. Qu'essayez-vous d'accomplir, et où l'outil vous gêne-t-il
+        aujourd'hui ?
     validations:
       required: true
 
   - type: textarea
     id: proposal
     attributes:
-      label: What you would like it to do
+      label: Ce que vous aimeriez qu'il fasse
     validations:
       required: true
 
   - type: textarea
     id: alternatives
     attributes:
-      label: What you do instead today
-      description: Workarounds, other tools, manual steps.
+      label: Ce que vous faites à la place aujourd'hui
+      description: Contournements, autres outils, étapes manuelles.
 
   - type: checkboxes
     id: constraints
     attributes:
-      label: Compatibility with the project's constraints
+      label: Compatibilité avec les contraintes du projet
       description: >
-        Tick the ones your proposal respects. If it breaks one, say so and
-        explain why it is worth it — that is a legitimate argument, just make it
-        explicitly.
+        Cochez celles que votre proposition respecte. Si elle en casse une,
+        dites-le et expliquez pourquoi ça en vaut la peine — c'est un argument
+        légitime, il suffit de le poser explicitement.
       options:
-        - label: Works offline in mock mode (`MOCK_EXTERNAL=1`)
-        - label: Adds no billed API calls, or gates them behind an explicit action
-        - label: Needs no authentication or hosted service
-        - label: Honours opt-out signals
+        - label: Fonctionne hors ligne en mode mock (`MOCK_EXTERNAL=1`)
+        - label: N'ajoute aucun appel d'API facturé, ou les conditionne à une action explicite
+        - label: Ne nécessite ni authentification ni service hébergé
+        - label: Respecte les refus de démarchage
