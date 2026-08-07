@@ -5,7 +5,7 @@
  * rayon est alors centré dessus, ce qui change les prospects retenus. La
  * requête envoyée à Google reste formulée à la ville.
  *
- * En mode `MOCK_EXTERNAL=1`, seule Zone demo dispose d'un jeu de fixtures :
+ * En mode `MOCK_EXTERNAL=1`, seule Tours dispose d'un jeu de fixtures :
  * changer le point de départ ici n'a d'effet utile qu'en mode réel.
  */
 

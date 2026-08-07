@@ -18,9 +18,9 @@ const { isFresh } = await import("../lib/pipeline");
 after(() => fs.rmSync(tmp, { recursive: true, force: true }));
 
 const base = {
-  textQuery: "plombier à Zone demo",
-  lat: 0.001154,
-  lng: 0.003052,
+  textQuery: "plombier à Tours",
+  lat: 47.389154,
+  lng: 0.692052,
   radiusM: 5000,
 };
 
@@ -28,27 +28,27 @@ describe("clé de cache d'une recherche Places", () => {
   it("ignore les micro-écarts de centre (~100 m)", () => {
     // Deux adresses voisines dans la même rue : une seule réponse en cache.
     const a = searchCacheKey(base, 0);
-    const b = searchCacheKey({ ...base, lat: 0.0011, lng: 0.00302 }, 0);
+    const b = searchCacheKey({ ...base, lat: 47.3891, lng: 0.69202 }, 0);
     assert.equal(a, b);
   });
 
   it("distingue deux centres réellement différents", () => {
     const a = searchCacheKey(base, 0);
-    const b = searchCacheKey({ ...base, lat: 0.02, lng: 0.03 }, 0);
+    const b = searchCacheKey({ ...base, lat: 47.41, lng: 0.72 }, 0);
     assert.notEqual(a, b);
   });
 
   it("distingue rayon, requête et page", () => {
     const a = searchCacheKey(base, 0);
     assert.notEqual(a, searchCacheKey({ ...base, radiusM: 10000 }, 0));
-    assert.notEqual(a, searchCacheKey({ ...base, textQuery: "coiffeur à Zone demo" }, 0));
+    assert.notEqual(a, searchCacheKey({ ...base, textQuery: "coiffeur à Tours" }, 0));
     assert.notEqual(a, searchCacheKey(base, 1));
   });
 
   it("ne dépend pas de la casse ni des espaces de la requête", () => {
     assert.equal(
       searchCacheKey(base, 0),
-      searchCacheKey({ ...base, textQuery: "  Plombier à ZONE DEMO " }, 0),
+      searchCacheKey({ ...base, textQuery: "  Plombier à TOURS " }, 0),
     );
   });
 

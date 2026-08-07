@@ -7,8 +7,8 @@
         "languageCode": "fr"
       },
       "location": {
-        "latitude": -0.003,
-        "longitude": 0.002
+        "latitude": 47.3849,
+        "longitude": 0.691
       },
       "types": [
         "hair_salon",
@@ -16,7 +16,7 @@
         "establishment"
       ],
       "primaryType": "hair_salon",
-      "formattedAddress": "1 voie demo, 00000 Zone demo, France",
+      "formattedAddress": "34 rue de Bordeaux, 37000 Tours, France",
       "businessStatus": "OPERATIONAL"
     },
     {
@@ -26,8 +26,8 @@
         "languageCode": "fr"
       },
       "location": {
-        "latitude": 0.004,
-        "longitude": -0.002
+        "latitude": 47.3919,
+        "longitude": 0.687
       },
       "types": [
         "hair_salon",
@@ -35,7 +35,7 @@
         "point_of_interest"
       ],
       "primaryType": "hair_salon",
-      "formattedAddress": "2 voie demo, 00000 Zone demo, France",
+      "formattedAddress": "12 rue Colbert, 37000 Tours, France",
       "businessStatus": "OPERATIONAL"
     }
   ]
