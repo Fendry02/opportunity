@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <title>Opportunity — gabarit de preview sociale</title>
+    <!--
+      Source régénérable de public/screenshots/social-preview.png.
+
+      C'est l'image que GitHub sert comme carte Open Graph : elle est ce qu'on
+      voit d'Opportunity sur Twitter, LinkedIn ou Slack avant même le README.
+
+      Régénérer (pas de script dédié : ça n'ajoute pas un navigateur headless
+      aux dépendances pour une image qui change deux fois par an) —
+        python3 -m http.server 8931
+      puis capturer cette page à 1280x640 et écraser
+      public/screenshots/social-preview.png.
+
+      Le PNG doit ensuite être téléversé dans Settings > General > Social
+      preview : GitHub n'expose aucune API pour ce réglage, et un fichier
+      versionné dans le dépôt n'y suffit pas.
+
+      Contraintes reprises de app/globals.css : une seule couleur d'accent
+      (indigo), pas de dégradé, pas d'ombre marquée, pas d'emoji décoratif.
+      1280x640 est le format recommandé par GitHub.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --app-bg: #fafafa;
+        --app-surface: #ffffff;
+        --app-border: #e5e7eb;
+        --app-text: #111827;
+        --app-muted: #6b7280;
+        --app-accent: #4f46e5;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 1280px;
+        height: 640px;
+        overflow: hidden;
+      }
+
+      body {
+        display: flex;
+        align-items: center;
+        background: var(--app-bg);
+        color: var(--app-text);
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+        /* Le rendu de capture ne doit pas dépendre du lissage de la machine. */
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .copy {
+        flex: 0 0 580px;
+        padding: 0 0 0 64px;
+      }
+
+      .wordmark {
+        font-size: 54px;
+        font-weight: 800;
+        letter-spacing: -0.035em;
+        line-height: 1;
+      }
+
+      /* Le seul aplat d'accent de l'image, repris de --app-accent. */
+      .rule {
+        width: 52px;
+        height: 5px;
+        margin: 18px 0 26px;
+        border-radius: 3px;
+        background: var(--app-accent);
+      }
+
+      .tagline {
+        font-size: 25px;
+        font-weight: 400;
+        line-height: 1.44;
+        letter-spacing: -0.012em;
+        max-width: 505px;
+      }
+
+      .tagline strong {
+        font-weight: 700;
+      }
+
+      .points {
+        margin-top: 32px;
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .points li {
+        position: relative;
+        padding-left: 21px;
+        font-size: 18px;
+        line-height: 1.4;
+        color: var(--app-muted);
+        /* Chaque puce doit tenir sur une ligne : une seule qui déborde et la
+           colonne perd son rythme. */
+        white-space: nowrap;
+      }
+
+      .points li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        /* Aligné optiquement sur la hauteur d'x, pas sur la boîte de ligne. */
+        top: 9px;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--app-accent);
+      }
+
+      /* La capture déborde volontairement à droite : elle suggère une app plus
+         large que le cadre plutôt qu'une fenêtre posée au centre. */
+      .shot {
+        flex: 1 1 auto;
+        align-self: stretch;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+      }
+
+      /* Plus large que la place disponible : la capture est volontairement
+         coupée par le bord droit du cadre. */
+      .shot img {
+        width: 934px;
+        height: auto;
+        border: 1px solid var(--app-border);
+        border-top-left-radius: 12px;
+        border-bottom-left-radius: 12px;
+        box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04),
+          0 12px 32px rgba(17, 24, 39, 0.08);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="copy">
+      <div class="wordmark">Opportunity</div>
+      <div class="rule"></div>
+      <p class="tagline">
+        Trouvez les entreprises locales dont le site est
+        <strong>absent, cassé ou dépassé</strong> — et repartez avec le brief
+        commercial.
+      </p>
+      <ul class="points">
+        <li>Tourne en local. Ni compte, ni SaaS, ni LLM.</li>
+        <li>Score déterministe, de 0 à 100.</li>
+        <li>Cache SQLite : jamais deux fois la même dépense.</li>
+      </ul>
+    </div>
+    <div class="shot">
+      <img src="../public/screenshots/01-workspace.png" alt="" />
+    </div>
+  </body>
+</html>
