@@ -7,7 +7,7 @@
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org)
 [![Node 22+](https://img.shields.io/badge/Node-22%2B-5FA04E)](https://nodejs.org)
 
-![Opportunity : balayer une ville, classer les prospects, ouvrir un diagnostic, exporter un brief](public/screenshots/demo.gif)
+![Opportunity : balayer une ville, classer les prospects par score, ouvrir le diagnostic d'un prospect](public/screenshots/demo.gif)
 
 ## Pourquoi
 
@@ -143,7 +143,7 @@ Chaque défaut porte son propre argument commercial, parce que le chiffre seul n
 survit pas au contact d'un dirigeant.
 
 <p align="center">
-  <img src="public/screenshots/02-diagnostic.png" alt="Panneau prospect : identité, puis le diagnostic chiffré avec un argument par défaut" width="620">
+  <img src="public/screenshots/02-diagnostic.png" alt="Fiche prospect : identité, puis le diagnostic chiffré avec un argument commercial par défaut" width="620">
 </p>
 
 ## Comment le score est calculé
