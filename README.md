@@ -66,10 +66,15 @@ npm run dev
 Ouvrez <http://localhost:3000> et cliquez sur **Lancer le balayage**.
 
 `.env.local.example` positionne `MOCK_EXTERNAL=1`. Dans ce mode, l'application
-lit [`fixtures/`](fixtures/) et ne fait **aucun appel réseau** — vous obtenez
-une démo complète sur Tours, avec dix entreprises fictives, sans clé Google et
-sans dépenser un centime. Tout ce qui suit à propos de Google Places ne compte
-qu'une fois ce drapeau désactivé.
+lit [`fixtures/`](fixtures/) et **ne fait aucun appel sortant côté serveur** —
+vous obtenez une démo complète sur Tours, avec dix entreprises fictives, sans
+clé Google et sans dépenser un centime. Tout ce qui suit à propos de Google
+Places ne compte qu'une fois ce drapeau désactivé.
+
+Seule exception, et elle est côté navigateur : les tuiles du fond de carte sont
+chargées depuis CARTO. Elles ne passent pas par `cachedFetch()` et ne sont donc
+pas coupées par le mode mock. C'est gratuit et sans clé, mais ce n'est pas hors
+ligne.
 
 ## Le résultat
 
@@ -231,20 +236,22 @@ Validez la clé avec un seul appel avant de lancer un vrai balayage :
 npm run places:smoke -- "plombier à Tours"
 ```
 
-### Optionnel : fond de carte Google Maps
+## Le fond de carte
 
-Pour une installation locale avec la couche Google Maps officielle à la place
-d'OpenStreetMap :
+Données OpenStreetMap, rendues par [CARTO
+Voyager](https://carto.com/basemaps) — gratuit, sans compte, sans clé d'API.
+Aucune configuration.
 
-```bash
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=$GOOGLE_PLACES_API_KEY
-```
+Le fond est volontairement en palette sourde : les pastilles de score sont
+rouges et orangées, et un fond coloré entre en concurrence chromatique avec
+elles dès qu'un balayage est dense. Voyager conserve malgré tout des routes
+contrastées, ce qui permet de suivre une rue sous un amas de pins — c'est ce
+qui l'a fait préférer à Positron, plus épuré mais trop délavé pour ça.
 
-`NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` est visible depuis le navigateur par
-construction — l'API JavaScript Maps s'exécute côté client. Restreignez cette
-clé dans Google Cloud à `http://localhost:3000/*` et à l'API JavaScript Maps.
-Laissée vide, Opportunity retombe sur la couche OpenStreetMap France (celle des
-captures ci-dessus).
+Un fond vectoriel donnerait un contrôle complet du style et un zoom continu.
+Le travail est commencé sur la branche `carte/fond-vectoriel` mais **ne rend
+pas** : MapLibre s'initialise sans erreur puis ne demande jamais ses tuiles. Le
+diagnostic est consigné dans le message de commit de cette branche.
 
 ## Scripts
 
@@ -293,6 +300,7 @@ Les frontières qui gardent le projet peu coûteux et testable :
 | Google Places Details | Site web, téléphone, note, horaires | 30 jours |
 | Sites des prospects | Signaux techniques et de contenu | 7 jours |
 | `recherche-entreprises.api.gouv.fr` | Enrichissement entreprise (SIREN, dirigeants) | 90 jours |
+| `basemaps.cartocdn.com` | Tuiles du fond de carte | — (chargé par le navigateur) |
 
 ## Feuille de route
 
