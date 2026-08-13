@@ -7,6 +7,7 @@ import { QuotaBadge } from "./QuotaBadge";
 import { ResultsList } from "./ResultsList";
 import { ResultsToolbar, type SortMode, applyFilters } from "./ResultsToolbar";
 import { SearchForm } from "./SearchForm";
+import { ApiError, describeError, fetchJson } from "@/lib/fetch-json";
 import { formatRadius } from "@/lib/format";
 import type { ScoreTier } from "@/lib/scoring";
 import type { ProspectSummary, Quota, SearchSummary } from "@/lib/types";
@@ -24,6 +25,15 @@ const LAST_SEARCH_KEY = "opportunity:last-search";
  */
 
 const POLL_INTERVAL_MS = 1500;
+
+/**
+ * Le polling tolère quelques échecs réseau d'affilée (blip Wi-Fi, serveur qui
+ * redémarre) avant de rendre la main à l'utilisateur avec un « Réessayer ».
+ */
+const MAX_POLL_RETRIES = 4;
+
+/** Erreur affichée dans le bandeau de statut, avec un éventuel « Réessayer ». */
+type AppError = { message: string; retry?: () => void };
 
 // Leaflet accède à `window` dès l'import : jamais de rendu serveur.
 const ResultsMap = dynamic(() => import("./ResultsMap").then((m) => m.ResultsMap), {
@@ -47,11 +57,13 @@ export function SearchWorkspace() {
   const selectedId = selection.id;
   /** Prospect dont la fiche est ouverte dans le panneau, à droite. */
   const [openedId, setOpenedId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<AppError | null>(null);
   const [history, setHistory] = useState<SearchSummary[]>([]);
   const [quota, setQuota] = useState<Quota | null>(null);
   /** Incrémenté à chaque fin de recherche pour rafraîchir historique et quota. */
   const [historyVersion, setHistoryVersion] = useState(0);
+  /** Bump manuel pour relancer le polling après une coupure réseau. */
+  const [pollNonce, setPollNonce] = useState(0);
 
   // Tri et filtres : purement locaux, ils ne relancent jamais de recherche.
   const [sort, setSort] = useState<SortMode>("score");
@@ -83,27 +95,31 @@ export function SearchWorkspace() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const [searches, quotaRes] = await Promise.all([
-        fetch("/api/searches", { cache: "no-store" }),
-        fetch("/api/quota", { cache: "no-store" }),
+      // Historique et quota sont indépendants : un quota en erreur ne doit pas
+      // priver l'utilisateur de son historique, et inversement.
+      const [searches, quotaRes] = await Promise.allSettled([
+        fetchJson<{ searches: SearchSummary[] }>("/api/searches"),
+        fetchJson<Quota>("/api/quota"),
       ]);
       if (cancelled) return;
-      if (searches.ok) {
-        const data = (await searches.json()) as { searches: SearchSummary[] };
-        if (cancelled) return;
-        setHistory(data.searches);
 
+      if (searches.status === "fulfilled") {
+        setHistory(searches.value.searches);
+        setError(null);
         // Au démarrage, on ouvre la recherche la plus récente. Une ancienne
         // valeur en sessionStorage peut pointer sur la démo et ramener à 0,0.
-        setActiveId((current) => {
-          if (current !== null) return current;
-          return data.searches[0]?.id ?? null;
+        setActiveId(
+          (current) => current ?? searches.value.searches[0]?.id ?? null,
+        );
+      } else {
+        setError({
+          message: describeError(searches.reason),
+          retry: () => setHistoryVersion((v) => v + 1),
         });
       }
-      if (quotaRes.ok) {
-        const data = (await quotaRes.json()) as Quota;
-        if (!cancelled) setQuota(data);
-      }
+
+      // Le badge quota est secondaire : s'il échoue, il disparaît, sans plus.
+      if (quotaRes.status === "fulfilled") setQuota(quotaRes.value);
     })();
     return () => {
       cancelled = true;
@@ -121,29 +137,50 @@ export function SearchWorkspace() {
 
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
+    // Échecs réseau consécutifs : on retente en silence jusqu'au plafond.
+    let failures = 0;
 
     const tick = async () => {
-      const res = await fetch(`/api/searches/${activeId}`, { cache: "no-store" });
-      if (cancelled) return;
+      try {
+        const data = await fetchJson<{
+          search: SearchSummary;
+          results: ProspectSummary[];
+        }>(`/api/searches/${activeId}`);
+        if (cancelled) return;
 
-      if (!res.ok) {
-        setError("Recherche introuvable");
-        return;
-      }
-      const data = (await res.json()) as {
-        search: SearchSummary;
-        results: ProspectSummary[];
-      };
-      if (cancelled) return;
+        failures = 0;
+        setSearch(data.search);
+        setResults(data.results);
 
-      setSearch(data.search);
-      setResults(data.results);
+        if (data.search.status === "running") {
+          setError(null);
+          timer = setTimeout(() => void tick(), POLL_INTERVAL_MS);
+        } else {
+          setHistoryVersion((v) => v + 1);
+          setError(
+            data.search.status === "error"
+              ? { message: data.search.error ?? "La recherche a échoué." }
+              : null,
+          );
+        }
+      } catch (err) {
+        if (cancelled) return;
 
-      if (data.search.status === "running") {
-        timer = setTimeout(() => void tick(), POLL_INTERVAL_MS);
-      } else {
-        if (data.search.status === "error") setError(data.search.error);
-        setHistoryVersion((v) => v + 1);
+        // Recherche supprimée entre-temps : inutile d'insister.
+        if (err instanceof ApiError && err.status === 404) {
+          setError({ message: "Cette recherche est introuvable." });
+          return;
+        }
+
+        failures += 1;
+        if (failures <= MAX_POLL_RETRIES) {
+          timer = setTimeout(() => void tick(), POLL_INTERVAL_MS);
+        } else {
+          setError({
+            message: `${describeError(err)} La mise à jour est suspendue.`,
+            retry: () => setPollNonce((n) => n + 1),
+          });
+        }
       }
     };
 
@@ -153,7 +190,7 @@ export function SearchWorkspace() {
       cancelled = true;
       if (timer) clearTimeout(timer);
     };
-  }, [activeId]);
+  }, [activeId, pollNonce]);
 
   const startSearch = useCallback(
     async (input: { city: string; radiusM: number; sectors: string[] }) => {
@@ -164,17 +201,17 @@ export function SearchWorkspace() {
       setSearch(null);
       setActiveId(null);
 
-      const res = await fetch("/api/searches", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      });
-      const data = (await res.json()) as { id?: number; error?: string };
-      if (!res.ok || !data.id) {
-        setError(data.error ?? "La recherche n'a pas pu démarrer");
-        return;
+      try {
+        const data = await fetchJson<{ id: number }>("/api/searches", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        });
+        setActiveId(data.id);
+      } catch (err) {
+        // Le formulaire reste sous la main : relancer suffit, pas de bouton dédié.
+        setError({ message: describeError(err) });
       }
-      setActiveId(data.id);
     },
     [],
   );
@@ -286,13 +323,22 @@ function StatusBar({
   resultCount,
 }: {
   search: SearchSummary | null;
-  error: string | null;
+  error: AppError | null;
   resultCount: number;
 }) {
   if (error) {
     return (
-      <div className="shrink-0 border-b border-app-border bg-app-surface px-5 py-2 text-[12.5px] text-app-ko">
-        {error}
+      <div className="flex shrink-0 items-center gap-3 border-b border-app-border bg-app-surface px-5 py-2 text-[12.5px] text-app-ko">
+        <span>{error.message}</span>
+        {error.retry && (
+          <button
+            type="button"
+            onClick={error.retry}
+            className="rounded-app border border-app-border px-2 py-0.5 font-medium text-app-ko hover:bg-app-hover"
+          >
+            Réessayer
+          </button>
+        )}
       </div>
     );
   }

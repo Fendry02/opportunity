@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ProspectDetailView } from "./ProspectDetailView";
+import { ApiError, fetchJson } from "@/lib/fetch-json";
 import type { ProspectDetail } from "@/lib/types";
 
 /**
@@ -22,6 +23,7 @@ export function ProspectPanel({
 }) {
   const [prospect, setProspect] = useState<ProspectDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reloadNonce, setReloadNonce] = useState(0);
   const closeRef = useRef<HTMLButtonElement>(null);
 
   // Le composant est monté avec une `key` par prospect : l'état repart de zéro
@@ -30,22 +32,23 @@ export function ProspectPanel({
     let cancelled = false;
 
     void (async () => {
-      const res = await fetch(`/api/prospects/${encodeURIComponent(prospectId)}`, {
-        cache: "no-store",
-      });
-      if (cancelled) return;
-      if (!res.ok) {
-        setError("Fiche introuvable");
-        return;
+      try {
+        const data = await fetchJson<{ prospect: ProspectDetail }>(
+          `/api/prospects/${encodeURIComponent(prospectId)}`,
+        );
+        if (!cancelled) setProspect(data.prospect);
+      } catch (err) {
+        if (cancelled) return;
+        setError(
+          err instanceof ApiError ? err.message : "Fiche prospect introuvable.",
+        );
       }
-      const data = (await res.json()) as { prospect: ProspectDetail };
-      if (!cancelled) setProspect(data.prospect);
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [prospectId]);
+  }, [prospectId, reloadNonce]);
 
   // Échap ferme : c'est le geste attendu pour revenir à la carte.
   useEffect(() => {
@@ -89,7 +92,19 @@ export function ProspectPanel({
 
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
         {error ? (
-          <p className="text-app-ko">{error}</p>
+          <div className="text-app-ko">
+            <p>{error}</p>
+            <button
+              type="button"
+              onClick={() => {
+                setError(null);
+                setReloadNonce((n) => n + 1);
+              }}
+              className="mt-3 rounded-app border border-app-border px-2.5 py-1 text-[12.5px] font-medium hover:bg-app-hover"
+            >
+              Réessayer
+            </button>
+          </div>
         ) : prospect ? (
           <ProspectDetailView initial={prospect} variant="panel" />
         ) : (

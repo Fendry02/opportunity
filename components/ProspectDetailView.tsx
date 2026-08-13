@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ScoreBadge } from "./ScoreBadge";
 import { SignalChecklist } from "./SignalChecklist";
 import { BlockedIcon } from "./icons";
+import { ApiError, fetchJson } from "@/lib/fetch-json";
 import { formatDistance } from "@/lib/format";
 import { TIER_LABEL } from "@/lib/scoring";
 import type { ProspectDetail } from "@/lib/types";
@@ -31,19 +32,15 @@ export function ProspectDetailView({
     setEnriching(true);
     setError(null);
     try {
-      const res = await fetch(
+      const data = await fetchJson<{ prospect: ProspectDetail }>(
         `/api/prospects/${encodeURIComponent(prospect.id)}/enrich`,
         { method: "POST" },
       );
-      const data = (await res.json()) as {
-        prospect?: ProspectDetail;
-        error?: string;
-      };
-      if (!res.ok || !data.prospect) {
-        setError(data.error ?? "Enrichissement impossible");
-        return;
-      }
       setProspect(data.prospect);
+    } catch (err) {
+      setError(
+        err instanceof ApiError ? err.message : "Enrichissement impossible.",
+      );
     } finally {
       setEnriching(false);
     }
