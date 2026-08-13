@@ -1,0 +1,17 @@
+# Garder l'image légère et ne jamais y embarquer de secrets ni la base locale.
+.git
+node_modules
+.next
+data
+*.db
+*.db-shm
+*.db-wal
+.env
+.env.*
+!.env.local.example
+npm-debug.log*
+Dockerfile
+.dockerignore
+docs
+tests
+public/screenshots

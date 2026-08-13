@@ -2,6 +2,13 @@
 
 _2026-08-13_
 
+> [!WARNING]
+> **Spec caduque — remplacée par
+> [2026-08-13-auto-hebergement-design.md](2026-08-13-auto-hebergement-design.md).**
+> Le besoin réel s'est révélé bien plus simple : une application **auto-hébergeable
+> mono-utilisateur** (chacun déploie la sienne, protégée par un mot de passe), et
+> non un SaaS multi-tenant. On garde SQLite, aucun refactor lourd.
+
 ## Intention
 
 Transformer Opportunity, aujourd'hui outil **local-first mono-utilisateur**, en un

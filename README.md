@@ -241,6 +241,53 @@ Validez la clé avec un seul appel avant de lancer un vrai balayage :
 npm run places:smoke -- "plombier à Tours"
 ```
 
+## Déployer votre instance
+
+Opportunity est fait pour tourner en local, mais rien n'empêche d'en héberger
+une **instance personnelle**, toujours accessible. Elle reste
+**mono-utilisateur** : vos données, votre clé, protégée par un mot de passe. Pas
+de comptes, pas de multi-tenant — chacun déploie la sienne.
+
+Le dépôt fournit tout le nécessaire : `Dockerfile`, `.dockerignore` et un
+`fly.toml` d'exemple pour [Fly.io](https://fly.io).
+
+### Sur Fly.io
+
+```bash
+fly launch --copy-config          # reprend fly.toml, choisit un nom d'app + une région
+fly volumes create opportunity_data --size 1 --region cdg   # base SQLite persistante
+fly secrets set \
+  GOOGLE_PLACES_API_KEY=votre_cle_google \
+  APP_PASSWORD=un_mot_de_passe_solide
+fly deploy
+```
+
+- **`APP_PASSWORD`** protège l'instance : sans lui, quiconque connaît l'URL
+  pourrait lancer des balayages sur *votre* clé Google. Défini → une page de
+  connexion apparaît ; absent → l'instance est ouverte (pratique en local).
+- **`GOOGLE_PLACES_API_KEY`** : votre clé (voir § Configuration Google Places).
+  Gardez `MOCK_EXTERNAL=1` dans `fly.toml` pour déployer d'abord une démo sans
+  clé, puis passez à `0`.
+- La base vit sur le volume monté sur `/data` (`OPPORTUNITY_DB_PATH`) : elle
+  survit aux redéploiements. Se déconnecter : `POST /api/logout`.
+
+### Ailleurs (Docker)
+
+L'image est un conteneur standard, déployable sur n'importe quel hôte Docker
+(Render, Railway, un VPS…) :
+
+```bash
+docker build -t opportunity .
+docker run -p 3000:3000 \
+  -e APP_PASSWORD=un_mot_de_passe_solide \
+  -e GOOGLE_PLACES_API_KEY=votre_cle_google \
+  -e MOCK_EXTERNAL=0 \
+  -v opportunity_data:/data \
+  opportunity
+```
+
+Montez un volume sur `/data` pour que la base persiste entre deux versions.
+
 ## Le fond de carte
 
 Données OpenStreetMap, rendues par [CARTO
@@ -321,8 +368,10 @@ ordre approximatif :
 
 Énoncé pour que personne ne gaspille une pull request dessus :
 
-- **Pas de SaaS, pas de version hébergée, pas de comptes.** Ça tourne sur votre
-  machine, sur vos données, avec votre clé d'API.
+- **Pas de SaaS multi-comptes, pas de service hébergé par le projet.** Chaque
+  instance est mono-utilisateur — la vôtre, sur vos données, avec votre clé. On
+  peut l'[auto-héberger](#déployer-votre-instance), mais il n'y a ni comptes
+  multiples, ni serveur central.
 - **Pas de LLM.** Le diagnostic est déterministe et reproductible : le même site
   obtient deux fois le même score.
 - **Pas de CRM.** L'outil trouve des prospects ; il n'est pas là où vous les
