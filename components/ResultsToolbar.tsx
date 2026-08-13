@@ -1,7 +1,11 @@
 "use client";
 
+import {
+  CONTACT_STATUS_LABEL,
+  CONTACT_STATUS_ORDER,
+} from "@/lib/contact-labels";
 import { TIER_COLOR, TIER_LABEL, type ScoreTier } from "@/lib/scoring";
-import type { ProspectSummary } from "@/lib/types";
+import type { ContactStatus, ProspectSummary } from "@/lib/types";
 
 /**
  * Barre au-dessus de la liste : tri, filtres par palier, masquage des écartés.
@@ -12,6 +16,8 @@ import type { ProspectSummary } from "@/lib/types";
  */
 
 export type SortMode = "score" | "distance";
+/** « all » = pas de filtre de suivi. */
+export type ContactFilter = ContactStatus | "all";
 
 const TIERS: ScoreTier[] = ["high", "mid", "low", "none"];
 
@@ -25,17 +31,22 @@ const TIER_RANGE: Record<ScoreTier, string> = {
 export function ResultsToolbar({
   results,
   shown,
+  searchId,
   sort,
   onSortChange,
   activeTiers,
   onToggleTier,
   hideOptOut,
   onHideOptOutChange,
+  contactFilter,
+  onContactFilterChange,
 }: {
   /** Tous les résultats de la recherche, avant filtrage. */
   results: ProspectSummary[];
   /** Nombre affiché après filtrage. */
   shown: number;
+  /** Recherche courante : cible de l'export groupé des briefs. */
+  searchId: number;
   sort: SortMode;
   onSortChange: (sort: SortMode) => void;
   /** Paliers retenus ; vide = aucun filtre. */
@@ -43,9 +54,14 @@ export function ResultsToolbar({
   onToggleTier: (tier: ScoreTier) => void;
   hideOptOut: boolean;
   onHideOptOutChange: (hide: boolean) => void;
+  contactFilter: ContactFilter;
+  onContactFilterChange: (value: ContactFilter) => void;
 }) {
   const counts = countByTier(results);
   const optOutCount = results.filter((r) => r.optOut).length;
+  const briefableCount = results.filter(
+    (r) => !r.optOut && r.score !== null,
+  ).length;
   const filtered = shown !== results.length;
 
   return (
@@ -78,19 +94,63 @@ export function ResultsToolbar({
           ))}
         </div>
 
-        {optOutCount > 0 && (
-          <label className="ml-auto flex cursor-pointer items-center gap-1.5 text-[12.5px] text-app-muted">
-            <input
-              type="checkbox"
-              checked={hideOptOut}
-              onChange={(e) => onHideOptOutChange(e.target.checked)}
-              className="accent-app-accent"
-            />
-            Masquer les {optOutCount} écarté{optOutCount > 1 ? "s" : ""}
-          </label>
-        )}
+        <div className="ml-auto flex flex-wrap items-center gap-3">
+          <ContactFilterSelect
+            value={contactFilter}
+            onChange={onContactFilterChange}
+          />
+
+          {optOutCount > 0 && (
+            <label className="flex cursor-pointer items-center gap-1.5 text-[12.5px] text-app-muted">
+              <input
+                type="checkbox"
+                checked={hideOptOut}
+                onChange={(e) => onHideOptOutChange(e.target.checked)}
+                className="accent-app-accent"
+              />
+              Masquer les {optOutCount} écarté{optOutCount > 1 ? "s" : ""}
+            </label>
+          )}
+
+          {briefableCount > 0 && (
+            <a
+              href={`/api/searches/${searchId}/briefs`}
+              title={`Télécharger en un seul Markdown les ${briefableCount} briefs de ce balayage`}
+              className="flex h-8 items-center rounded-app border border-app-border px-2.5 text-[12.5px] font-medium transition hover:bg-app-hover active:scale-[0.96]"
+            >
+              Exporter les briefs
+            </a>
+          )}
+        </div>
       </div>
     </div>
+  );
+}
+
+function ContactFilterSelect({
+  value,
+  onChange,
+}: {
+  value: ContactFilter;
+  onChange: (value: ContactFilter) => void;
+}) {
+  return (
+    <label className="flex items-center gap-1.5 text-[12.5px] text-app-muted">
+      Suivi
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value as ContactFilter)}
+        aria-label="Filtrer par suivi de contact"
+        className="h-8 rounded-app border border-app-border bg-app-surface px-1.5 text-[12.5px]"
+      >
+        <option value="all">Tous</option>
+        {CONTACT_STATUS_ORDER.map((status) => (
+          <option key={status} value={status}>
+            {CONTACT_STATUS_LABEL[status]}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
 
@@ -171,10 +231,24 @@ function countByTier(results: ProspectSummary[]): Record<ScoreTier, number> {
 /** Applique tri et filtres. Purement local : aucun appel réseau. */
 export function applyFilters(
   results: ProspectSummary[],
-  options: { sort: SortMode; activeTiers: ScoreTier[]; hideOptOut: boolean },
+  options: {
+    sort: SortMode;
+    activeTiers: ScoreTier[];
+    hideOptOut: boolean;
+    /** Filtre de suivi ; absent ou « all » = tous. */
+    contactFilter?: ContactFilter;
+  },
 ): ProspectSummary[] {
   const filtered = results.filter((result) => {
     if (options.hideOptOut && result.optOut) return false;
+    // Le filtre de suivi s'applique à tous, écartés compris.
+    if (
+      options.contactFilter &&
+      options.contactFilter !== "all" &&
+      result.contactStatus !== options.contactFilter
+    ) {
+      return false;
+    }
     // Un prospect écarté n'a pas de palier : il échappe au filtre par couleur
     // tant qu'on ne demande pas explicitement de le masquer.
     if (options.activeTiers.length === 0 || result.optOut) return true;

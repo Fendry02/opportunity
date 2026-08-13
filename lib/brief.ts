@@ -208,6 +208,58 @@ export function buildBrief(prospect: ProspectDetail): string {
   return lines.join("\n");
 }
 
+/**
+ * Réunit les briefs d'un balayage entier en un seul Markdown : on emporte le
+ * balayage complet plutôt que d'exporter une fiche à la fois. Les prospects non
+ * notés et les refus de démarchage sont écartés, le reste est trié par score
+ * décroissant, précédé d'un sommaire.
+ */
+export function buildSweepBrief(
+  label: string,
+  prospects: ProspectDetail[],
+): string {
+  const briefable = prospects
+    .filter((p) => !p.optOut && p.score !== null)
+    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+
+  const lines: string[] = [];
+  lines.push(`# Briefs — ${label}`, "");
+  lines.push(
+    `_${briefable.length} prospect${briefable.length > 1 ? "s" : ""} à contacter · ` +
+      `généré le ${new Date().toLocaleDateString("fr-FR")} par Opportunity._`,
+    "",
+  );
+
+  if (briefable.length === 0) {
+    lines.push("Aucun prospect à briefer pour ce balayage.", "");
+    return lines.join("\n");
+  }
+
+  lines.push("## Sommaire", "");
+  briefable.forEach((prospect, index) => {
+    lines.push(`${index + 1}. ${prospect.name} — ${prospect.score}/100`);
+  });
+  lines.push("");
+
+  for (const prospect of briefable) {
+    lines.push("---", "", buildBrief(prospect), "");
+  }
+
+  return lines.join("\n");
+}
+
+/** Nom de fichier proposé pour l'export d'un balayage entier. */
+export function sweepBriefFilename(label: string): string {
+  const slug = label
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  const date = new Date().toISOString().slice(0, 10);
+  return `briefs-${slug || "balayage"}-${date}.md`;
+}
+
 /** Remplace les tokens du gabarit par les données du prospect. */
 function personalize(text: string, prospect: ProspectDetail): string {
   const city = /(\d{5})\s+([^,]+)/.exec(prospect.address ?? "")?.[2]?.trim();

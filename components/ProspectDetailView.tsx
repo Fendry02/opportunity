@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { ContactStatusControl } from "./ContactStatus";
 import { ScoreBadge } from "./ScoreBadge";
 import { SignalChecklist } from "./SignalChecklist";
 import { BlockedIcon } from "./icons";
 import { ApiError, fetchJson } from "@/lib/fetch-json";
 import { formatDistance } from "@/lib/format";
 import { TIER_LABEL } from "@/lib/scoring";
-import type { ProspectDetail } from "@/lib/types";
+import type { ContactStatus, ProspectDetail } from "@/lib/types";
 
 /**
  * Contenu de la fiche prospect, sans habillage de page.
@@ -26,6 +27,7 @@ export function ProspectDetailView({
 }) {
   const [prospect, setProspect] = useState(initial);
   const [enriching, setEnriching] = useState(false);
+  const [savingStatus, setSavingStatus] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function enrich() {
@@ -43,6 +45,34 @@ export function ProspectDetailView({
       );
     } finally {
       setEnriching(false);
+    }
+  }
+
+  async function changeStatus(next: ContactStatus) {
+    const previous = prospect.contactStatus;
+    if (next === previous) return;
+
+    setSavingStatus(true);
+    setError(null);
+    // Optimiste : le menu réagit tout de suite, on revient en arrière si l'appel échoue.
+    setProspect((current) => ({ ...current, contactStatus: next }));
+    try {
+      const data = await fetchJson<{ prospect: ProspectDetail }>(
+        `/api/prospects/${encodeURIComponent(prospect.id)}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ contactStatus: next }),
+        },
+      );
+      setProspect(data.prospect);
+    } catch (err) {
+      setProspect((current) => ({ ...current, contactStatus: previous }));
+      setError(
+        err instanceof ApiError ? err.message : "Mise à jour du suivi impossible.",
+      );
+    } finally {
+      setSavingStatus(false);
     }
   }
 
@@ -86,7 +116,12 @@ export function ProspectDetailView({
         </div>
 
         {!prospect.optOut && !compact && (
-          <div className="flex shrink-0 gap-2">
+          <div className="flex shrink-0 flex-wrap justify-end gap-2">
+            <ContactStatusControl
+              status={prospect.contactStatus}
+              disabled={savingStatus}
+              onChange={changeStatus}
+            />
             <EnrichButton
               enriching={enriching}
               enriched={!!enrichment}
@@ -98,7 +133,12 @@ export function ProspectDetailView({
       </header>
 
       {!prospect.optOut && compact && (
-        <div className="mt-3 flex gap-2">
+        <div className="mt-3 flex flex-wrap gap-2">
+          <ContactStatusControl
+            status={prospect.contactStatus}
+            disabled={savingStatus}
+            onChange={changeStatus}
+          />
           <EnrichButton
             enriching={enriching}
             enriched={!!enrichment}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { ContactStatusChip } from "./ContactStatus";
 import { ScoreBadge } from "./ScoreBadge";
 import { SignalIcons } from "./SignalIcons";
 import { BlockedIcon } from "./icons";
@@ -121,6 +122,7 @@ export function ResultsList({
                   {SITE_STATE_LABEL[prospect.siteState] && (
                     <span>· {SITE_STATE_LABEL[prospect.siteState]}</span>
                   )}
+                  <ContactStatusChip status={prospect.contactStatus} />
                 </div>
 
                 {prospect.optOut && (

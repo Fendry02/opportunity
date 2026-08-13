@@ -1,4 +1,5 @@
 import { sectorLabel } from "../config/sectors";
+import { normalizeContactStatus } from "./contact";
 import { getDb } from "./db";
 import { optOutLabel } from "./opt-out";
 import { type ScoreLine, scoreTier } from "./scoring";
@@ -115,12 +116,13 @@ type ResultRow = {
   analysis_url: string | null;
   opt_out_marker: string | null;
   opt_out_source: string | null;
+  contact_status: string | null;
 };
 
 const RESULTS_SQL = `
   SELECT b.id, b.name, b.sector, b.lat, b.lng, b.address, b.phone, b.website_url,
          b.rating, b.review_count, b.details_fetched_at,
-         b.opt_out_marker, b.opt_out_source,
+         b.opt_out_marker, b.opt_out_source, b.contact_status,
          r.distance_m,
          sc.total,
          a.reachable, a.has_viewport, a.https, a.has_title, a.has_meta_desc,
@@ -170,6 +172,7 @@ function toSummary(row: ResultRow): ProspectSummary {
     score: row.total,
     tier: row.total === null ? null : scoreTier(row.total),
     optOut: optOutLabelOf(row),
+    contactStatus: normalizeContactStatus(row.contact_status),
     siteState: siteState(row),
     flags: analysed
       ? {
@@ -210,6 +213,7 @@ type BusinessRow = {
   details_fetched_at: string | null;
   opt_out_marker: string | null;
   opt_out_source: string | null;
+  contact_status: string | null;
 };
 
 type AnalysisRow = {
@@ -371,6 +375,7 @@ export function getProspect(id: string): ProspectDetail | null {
     score: score?.total ?? null,
     tier: score ? scoreTier(score.total) : null,
     optOut: optOutLabelOf(business),
+    contactStatus: normalizeContactStatus(business.contact_status),
     breakdown: parseJson<ScoreLine[]>(score?.breakdown_json, []),
     analysis: analysis ? toAnalysisView(analysis) : null,
     enrichment: enrichment ? toEnrichmentView(enrichment) : null,

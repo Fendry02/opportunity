@@ -24,6 +24,7 @@ function prospect(over: Partial<ProspectSummary>): ProspectSummary {
     score: null,
     tier: null,
     optOut: null,
+    contactStatus: "to_contact",
     siteState: "alive",
     flags: null,
     ...over,
@@ -116,6 +117,43 @@ describe("filtres", () => {
     const before = ids(sample);
     applyFilters(sample, { sort: "distance", activeTiers: [], hideOptOut: false });
     assert.deepEqual(ids(sample), before);
+  });
+});
+
+describe("filtre de suivi", () => {
+  const withStatus: ProspectSummary[] = [
+    prospect({ id: "a", score: 92, tier: "high", contactStatus: "client" }),
+    prospect({ id: "b", score: 52, tier: "mid", contactStatus: "contacted" }),
+    prospect({ id: "c", score: 15, tier: "none", contactStatus: "to_contact" }),
+  ];
+
+  it("ne filtre rien avec « all »", () => {
+    const rows = applyFilters(withStatus, {
+      sort: "score",
+      activeTiers: [],
+      hideOptOut: false,
+      contactFilter: "all",
+    });
+    assert.equal(rows.length, 3);
+  });
+
+  it("ne garde que le statut demandé", () => {
+    const rows = applyFilters(withStatus, {
+      sort: "score",
+      activeTiers: [],
+      hideOptOut: false,
+      contactFilter: "client",
+    });
+    assert.deepEqual(ids(rows), ["a"]);
+  });
+
+  it("traite l'absence de filtre comme « tous »", () => {
+    const rows = applyFilters(withStatus, {
+      sort: "score",
+      activeTiers: [],
+      hideOptOut: false,
+    });
+    assert.equal(rows.length, 3);
   });
 });
 

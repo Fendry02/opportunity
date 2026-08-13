@@ -163,6 +163,10 @@ function migrate(db: Database.Database): void {
   // `label` est l'adresse complète saisie ; `city` sert à composer la requête
   // Places (« plombier à Tours »), jamais depuis l'adresse brute saisie.
   addColumnIfMissing(db, "searches", "city", "TEXT");
+  // Suivi de la prise de contact, porté par l'établissement : il persiste donc
+  // d'un balayage à l'autre. NULL = jamais marqué = « à contacter ».
+  addColumnIfMissing(db, "businesses", "contact_status", "TEXT");
+  addColumnIfMissing(db, "businesses", "contact_updated_at", "TEXT");
 }
 
 function addColumnIfMissing(

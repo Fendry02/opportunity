@@ -4,6 +4,16 @@ import type { ScoreLine, ScoreTier } from "./scoring";
 
 export type SearchStatus = "running" | "done" | "error";
 
+/**
+ * Suivi de la prise de contact, attaché à l'établissement : il suit donc le
+ * prospect d'un balayage à l'autre. `to_contact` est l'état par défaut.
+ */
+export type ContactStatus =
+  | "to_contact"
+  | "contacted"
+  | "not_interested"
+  | "client";
+
 /** Consommation Places du jour, exposée par `GET /api/quota`. */
 export type Quota = {
   /** En mode simulé, aucun appel n'est émis : le plafond ne s'applique pas. */
@@ -63,6 +73,8 @@ export type ProspectSummary = {
   tier: ScoreTier | null;
   /** Refus de démarchage affiché sur la fiche : le prospect n'est pas noté. */
   optOut: string | null;
+  /** Suivi de la prise de contact (défaut : à contacter). */
+  contactStatus: ContactStatus;
   /** État du site, résumé pour la liste. */
   siteState: "none" | "dead" | "alive" | "pending" | "opt_out";
   /** Signaux mis en avant sous forme d'icônes discrètes dans la liste. */
@@ -142,6 +154,7 @@ export type ProspectDetail = {
   score: number | null;
   tier: ScoreTier | null;
   optOut: string | null;
+  contactStatus: ContactStatus;
   breakdown: ScoreLine[];
   analysis: SiteAnalysisView | null;
   enrichment: EnrichmentView | null;

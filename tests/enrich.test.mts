@@ -185,6 +185,7 @@ describe("brief markdown", () => {
     score: 92,
     tier: "high",
     optOut: null,
+    contactStatus: "to_contact",
     breakdown: [
       {
         key: "base.noSite",

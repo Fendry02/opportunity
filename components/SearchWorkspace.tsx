@@ -6,7 +6,12 @@ import { ProspectPanel } from "./ProspectPanel";
 import { QuotaBadge } from "./QuotaBadge";
 import { ResultsList } from "./ResultsList";
 import { ResultsSkeleton } from "./ResultsSkeleton";
-import { ResultsToolbar, type SortMode, applyFilters } from "./ResultsToolbar";
+import {
+  ResultsToolbar,
+  type ContactFilter,
+  type SortMode,
+  applyFilters,
+} from "./ResultsToolbar";
 import { SearchForm } from "./SearchForm";
 import { ThemeToggle } from "./ThemeToggle";
 import { RadarIcon } from "./icons";
@@ -72,10 +77,11 @@ export function SearchWorkspace() {
   const [sort, setSort] = useState<SortMode>("score");
   const [activeTiers, setActiveTiers] = useState<ScoreTier[]>([]);
   const [hideOptOut, setHideOptOut] = useState(false);
+  const [contactFilter, setContactFilter] = useState<ContactFilter>("all");
 
   const visible = useMemo(
-    () => applyFilters(results, { sort, activeTiers, hideOptOut }),
-    [results, sort, activeTiers, hideOptOut],
+    () => applyFilters(results, { sort, activeTiers, hideOptOut, contactFilter }),
+    [results, sort, activeTiers, hideOptOut, contactFilter],
   );
 
   const selectFromMap = useCallback(
@@ -317,12 +323,15 @@ export function SearchWorkspace() {
                 <ResultsToolbar
                   results={results}
                   shown={visible.length}
+                  searchId={search.id}
                   sort={sort}
                   onSortChange={setSort}
                   activeTiers={activeTiers}
                   onToggleTier={toggleTier}
                   hideOptOut={hideOptOut}
                   onHideOptOutChange={setHideOptOut}
+                  contactFilter={contactFilter}
+                  onContactFilterChange={setContactFilter}
                 />
               )}
               <div className="min-h-0 flex-1 overflow-y-auto">
