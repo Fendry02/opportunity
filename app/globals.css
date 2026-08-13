@@ -25,6 +25,10 @@
   --app-ok: #16a34a;
   --app-ko: #dc2626;
 
+  /* Fond sous les tuiles de carte, et courbe d'animation partagée. */
+  --map-bg: #f2f2f2;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+
   /* Paliers de score */
   --score-high: #dc2626; /* >= 70 */
   --score-mid: #ea580c; /* 45-69 */
@@ -53,6 +57,7 @@
     --app-link: #a5b4fc;
     --app-ok: #22c55e;
     --app-ko: #f87171;
+    --map-bg: #0c0e12;
   }
 }
 
@@ -70,6 +75,7 @@
   --app-link: #a5b4fc;
   --app-ok: #22c55e;
   --app-ko: #f87171;
+  --map-bg: #0c0e12;
 }
 
 @theme inline {
@@ -156,12 +162,65 @@ body {
 /* Attribution CARTO / Leaflet, discrète. Le fond de carte reste clair. */
 .leaflet-container {
   font-family: inherit;
-  background: #f2f2f2;
+  background: var(--map-bg);
 }
 
 .leaflet-control-attribution {
   font-size: 10px;
   color: var(--app-muted);
+}
+
+/* Ouverture de la fiche prospect : léger glissé + fondu, joué une seule fois. */
+.panel-enter {
+  animation: panel-in 220ms var(--ease-out) both;
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Entrée en cascade des sections d'une fiche à l'ouverture. */
+.stagger > * {
+  animation: stagger-in 260ms var(--ease-out) both;
+}
+.stagger > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.stagger > *:nth-child(2) {
+  animation-delay: 40ms;
+}
+.stagger > *:nth-child(3) {
+  animation-delay: 80ms;
+}
+.stagger > *:nth-child(4) {
+  animation-delay: 120ms;
+}
+.stagger > *:nth-child(5) {
+  animation-delay: 160ms;
+}
+.stagger > *:nth-child(6) {
+  animation-delay: 200ms;
+}
+.stagger > *:nth-child(n + 7) {
+  animation-delay: 220ms;
+}
+
+@keyframes stagger-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* Respect de la préférence système « moins d'animations ». */
@@ -170,6 +229,7 @@ body {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }

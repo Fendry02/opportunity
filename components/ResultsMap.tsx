@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { Circle, MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
 import { TIER_COLOR, scoreTier } from "@/lib/scoring";
 import type { ProspectSummary } from "@/lib/types";
+import { useTheme } from "./use-theme";
 
 /**
  * Carte des prospects.
@@ -119,6 +120,8 @@ export function ResultsMap({
     () => results.find((r) => r.id === selectedId),
     [results, selectedId],
   );
+  // En thème sombre, le fond passe sur les tuiles sombres de CARTO.
+  const dark = useTheme() === "dark";
 
   return (
     <MapContainer
@@ -130,7 +133,12 @@ export function ResultsMap({
       {/* `{r}` sert les tuiles @2x sur écran Retina : sans lui, les libellés
           sont visiblement flous sur un portable moderne. */}
       <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+        key={dark ? "dark" : "light"}
+        url={
+          dark
+            ? "https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png"
+            : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+        }
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, tuiles &copy; <a href="https://carto.com/attributions">CARTO</a>'
         maxZoom={20}
       />

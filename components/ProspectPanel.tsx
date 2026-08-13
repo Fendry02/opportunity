@@ -67,7 +67,7 @@ export function ProspectPanel({
     <aside
       role="region"
       aria-label="Fiche prospect"
-      className="flex h-full flex-col border-l border-app-border bg-app-surface"
+      className="panel-enter flex h-full flex-col border-l border-app-border bg-app-surface"
     >
       <div className="flex shrink-0 items-center gap-3 border-b border-app-border px-4 py-2">
         <button

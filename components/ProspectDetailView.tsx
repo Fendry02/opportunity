@@ -84,7 +84,7 @@ export function ProspectDetailView({
   const SectionTitle = compact ? "h3" : "h2";
 
   return (
-    <div>
+    <div className="stagger">
       <header className="flex items-start gap-4">
         {prospect.optOut ? (
           <span

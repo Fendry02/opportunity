@@ -31,7 +31,7 @@ export function ResultsList({
   results: ProspectSummary[];
   selectedId: string | null;
   onSelect: (id: string | null) => void;
-  /** Clic sur le nom : ouvre la fiche dans le panneau. */
+  /** Clic sur la ligne : ouvre la fiche dans le panneau. */
   onOpen: (id: string) => void;
   /**
    * Ne vaut `true` que lorsque la sélection vient de la carte. Faire défiler
@@ -65,11 +65,7 @@ export function ResultsList({
           <li
             key={prospect.id}
             data-prospect={prospect.id}
-            onMouseEnter={() => onSelect(prospect.id)}
-            onFocus={() => onSelect(prospect.id)}
-            className={`px-4 py-2.5 transition-colors ${
-              selected ? "" : "hover:bg-app-hover"
-            }`}
+            className="transition-colors"
             // Sélection = liseré indigo à gauche : on repère la ligne courante
             // sans que le fond se confonde avec le simple survol.
             style={
@@ -81,7 +77,17 @@ export function ResultsList({
                 : undefined
             }
           >
-            <div className="flex items-center gap-3">
+            {/* Toute la ligne est cliquable : un vrai bouton, focusable au clavier. */}
+            <button
+              type="button"
+              onClick={() => onOpen(prospect.id)}
+              onMouseEnter={() => onSelect(prospect.id)}
+              onFocus={() => onSelect(prospect.id)}
+              aria-label={`Ouvrir la fiche de ${prospect.name}`}
+              className={`group flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left transition-colors ${
+                selected ? "" : "hover:bg-app-hover"
+              }`}
+            >
               {prospect.optOut ? (
                 <span
                   title="Écarté : refus de démarchage"
@@ -96,15 +102,13 @@ export function ResultsList({
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline gap-2">
-                  <button
-                    type="button"
-                    onClick={() => onOpen(prospect.id)}
-                    className={`truncate text-left font-medium hover:text-app-link ${
+                  <span
+                    className={`truncate font-medium transition-colors group-hover:text-app-link ${
                       prospect.optOut ? "text-app-muted line-through" : ""
                     }`}
                   >
                     {prospect.name}
-                  </button>
+                  </span>
                   <span className="shrink-0 text-[12.5px] text-app-muted">
                     {prospect.sectorLabel}
                   </span>
@@ -133,7 +137,7 @@ export function ResultsList({
               </div>
 
               <SignalIcons flags={prospect.flags} />
-            </div>
+            </button>
           </li>
         );
       })}
