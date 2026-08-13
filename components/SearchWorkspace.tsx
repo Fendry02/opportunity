@@ -13,6 +13,7 @@ import {
   applyFilters,
 } from "./ResultsToolbar";
 import { SearchForm } from "./SearchForm";
+import { SetupNotice } from "./SetupNotice";
 import { ThemeToggle } from "./ThemeToggle";
 import { RadarIcon } from "./icons";
 import { ApiError, describeError, fetchJson } from "@/lib/fetch-json";
@@ -295,6 +296,8 @@ export function SearchWorkspace() {
           <ThemeToggle />
         </div>
       </header>
+
+      <SetupNotice quota={quota} firstRun={history.length === 0} />
 
       <StatusBar search={search} error={error} resultCount={results.length} />
 

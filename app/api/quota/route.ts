@@ -18,5 +18,7 @@ export async function GET() {
     used,
     cap: PLACES_DAILY_CAP,
     remaining: Math.max(0, PLACES_DAILY_CAP - used),
+    // Sert à prévenir, avant le premier clic, qu'un balayage réel échouera faute de clé.
+    configured: Boolean(process.env.GOOGLE_PLACES_API_KEY),
   });
 }

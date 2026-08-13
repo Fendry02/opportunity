@@ -21,6 +21,8 @@ export type Quota = {
   used: number;
   cap: number;
   remaining: number;
+  /** Clé Google Places présente ? Hors mode démo, un balayage échoue sinon. */
+  configured: boolean;
 };
 
 export type SearchProgress = {

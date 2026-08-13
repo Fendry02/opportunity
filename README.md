@@ -48,6 +48,11 @@ d'un cache SQLite local qui vous appartient.
   une liste triable synchronisée.
 - Ouvrir un prospect sans quitter la carte, inspecter le détail du score, puis
   exporter un brief Markdown prêt pour la prise de contact.
+- Exporter tout un balayage d'un coup : un seul Markdown réunit les briefs de
+  tous les prospects notés, triés par score.
+- Suivre la prise de contact prospect par prospect — à contacter, contacté, pas
+  intéressé, client — un statut qui suit l'entreprise d'un balayage à l'autre.
+- Travailler en thème clair ou sombre, au choix ou selon le réglage du système.
 - Mettre en cache géocodage, Places, récupérations de sites et enrichissement
   dans SQLite : une recherche relancée ne consomme jamais deux fois du quota.
 - **Respecter les refus de démarchage** du type `pas de démarchage pour un site`
@@ -279,7 +284,7 @@ config/         secteurs éditables et réglages de recherche par défaut
 fixtures/       données simulées pour les démos et les tests
 lib/            logique métier, cache, analyseurs, score, enrichissement
 scripts/        vérifications smoke et validation de la base
-tests/          couverture node:test du score, de l'analyseur, de la mémoire, des filtres
+tests/          couverture node:test : score, analyseur, mémoire, filtres, briefs, réseau
 ```
 
 Les frontières qui gardent le projet peu coûteux et testable :
@@ -311,8 +316,6 @@ ordre approximatif :
   C'est de loin la plus grosse limite aujourd'hui.
 - Plus de signaux de score. C'est la façon la plus simple de contribuer — voir
   le [gabarit d'issue dédié](.github/ISSUE_TEMPLATE/new_signal.yml).
-- Exporter un balayage entier d'un coup, plutôt qu'un brief à la fois.
-- Suivre l'état de la prise de contact par prospect, d'un balayage à l'autre.
 
 ### Hors périmètre
 
