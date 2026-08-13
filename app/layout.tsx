@@ -10,6 +10,18 @@ const inter = Inter({
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
+/*
+ * Applique le thème choisi avant la première peinture : sans ça, une page
+ * demandée en sombre s'afficherait en clair le temps que React s'hydrate, d'où
+ * un flash blanc. Le système reste la valeur par défaut (géré en CSS).
+ */
+const THEME_INIT = `
+try {
+  var t = localStorage.getItem('opportunity:theme');
+  if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+} catch (e) {}
+`;
+
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
   applicationName: "Opportunity",
@@ -55,7 +67,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={`${inter.variable} h-full antialiased`}>
+    <html
+      lang="fr"
+      className={`${inter.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
+      </head>
       <body className="min-h-full">{children}</body>
     </html>
   );

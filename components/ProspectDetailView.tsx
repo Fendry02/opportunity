@@ -136,7 +136,7 @@ export function ProspectDetailView({
                   href={prospect.websiteUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="break-all text-app-accent hover:underline"
+                  className="break-all text-app-link hover:underline"
                 >
                   {prospect.websiteUrl}
                 </a>
@@ -343,7 +343,7 @@ function EnrichButton({
       type="button"
       onClick={onClick}
       disabled={enriching}
-      className="h-9 rounded-app border border-app-border bg-app-surface px-3 text-sm hover:bg-app-hover disabled:opacity-40"
+      className="h-9 rounded-app border border-app-border bg-app-surface px-3 text-sm transition hover:bg-app-hover active:scale-[0.96] disabled:opacity-40"
     >
       {enriching ? "Enrichissement…" : enriched ? "Réactualiser" : "Enrichir"}
     </button>
@@ -354,7 +354,7 @@ function BriefLink({ id }: { id: string }) {
   return (
     <a
       href={`/api/prospects/${encodeURIComponent(id)}/brief`}
-      className="flex h-9 items-center rounded-app bg-app-accent px-3 text-sm font-medium text-white hover:bg-app-accent-hover"
+      className="flex h-9 items-center rounded-app bg-app-accent px-3 text-sm font-medium text-white transition hover:bg-app-accent-hover active:scale-[0.96]"
     >
       Brief Markdown
     </a>

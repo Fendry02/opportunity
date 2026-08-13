@@ -74,7 +74,7 @@ export function ProspectPanel({
           ref={closeRef}
           type="button"
           onClick={onClose}
-          className="flex h-8 items-center rounded-app border border-app-border px-2.5 text-[12.5px] hover:bg-app-hover"
+          className="flex h-8 items-center rounded-app border border-app-border px-2.5 text-[12.5px] transition hover:bg-app-hover active:scale-[0.96]"
         >
           ← Retour à la liste
         </button>
@@ -83,7 +83,7 @@ export function ProspectPanel({
         {prospect && (
           <Link
             href={`/prospects/${encodeURIComponent(prospect.id)}`}
-            className="ml-auto text-[12.5px] text-app-accent hover:underline"
+            className="ml-auto text-[12.5px] text-app-link hover:underline"
           >
             Ouvrir en pleine page
           </Link>

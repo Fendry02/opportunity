@@ -13,7 +13,7 @@ export function ProspectSheet({ initial }: { initial: ProspectDetail }) {
     <div className="mx-auto max-w-4xl px-6 py-8">
       <Link
         href="/"
-        className="text-[12.5px] text-app-muted hover:text-app-accent"
+        className="text-[12.5px] text-app-muted hover:text-app-link"
       >
         ← Retour aux résultats
       </Link>

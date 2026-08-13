@@ -87,6 +87,40 @@ export function MailIcon({ size = 12, className }: IconProps) {
   );
 }
 
+/** Thème clair. */
+export function SunIcon({ size = 16, className }: IconProps) {
+  return svg(
+    size,
+    className,
+    <>
+      <circle cx="8" cy="8" r="3.2" />
+      <path d="M8 1.6v1.6M8 12.8v1.6M1.6 8h1.6M12.8 8h1.6M3.5 3.5l1.1 1.1M11.4 11.4l1.1 1.1M12.5 3.5l-1.1 1.1M4.6 11.4l-1.1 1.1" />
+    </>,
+  );
+}
+
+/** Thème sombre. */
+export function MoonIcon({ size = 16, className }: IconProps) {
+  return svg(
+    size,
+    className,
+    <path d="M13 9.3A5.4 5.4 0 0 1 6.7 3a5.4 5.4 0 1 0 6.3 6.3Z" />,
+  );
+}
+
+/** Balayage / radar : illustration discrète de l'état vide. */
+export function RadarIcon({ size = 16, className }: IconProps) {
+  return svg(
+    size,
+    className,
+    <>
+      <circle cx="8" cy="8" r="6.5" />
+      <circle cx="8" cy="8" r="3.2" />
+      <path d="M8 8l4.6-4.6" />
+    </>,
+  );
+}
+
 /** Technologie à jour. */
 export function GearIcon({ size = 12, className }: IconProps) {
   return svg(

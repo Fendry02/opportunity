@@ -5,8 +5,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ProspectPanel } from "./ProspectPanel";
 import { QuotaBadge } from "./QuotaBadge";
 import { ResultsList } from "./ResultsList";
+import { ResultsSkeleton } from "./ResultsSkeleton";
 import { ResultsToolbar, type SortMode, applyFilters } from "./ResultsToolbar";
 import { SearchForm } from "./SearchForm";
+import { ThemeToggle } from "./ThemeToggle";
+import { RadarIcon } from "./icons";
 import { ApiError, describeError, fetchJson } from "@/lib/fetch-json";
 import { formatRadius } from "@/lib/format";
 import type { ScoreTier } from "@/lib/scoring";
@@ -131,6 +134,31 @@ export function SearchWorkspace() {
       window.sessionStorage.setItem(LAST_SEARCH_KEY, String(activeId));
     }
   }, [activeId]);
+
+  // « / » cible le champ de recherche, comme dans les outils qu'on utilise vite.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "/" || event.defaultPrevented) return;
+      const el = document.activeElement;
+      const typing =
+        el instanceof HTMLElement &&
+        (el.tagName === "INPUT" ||
+          el.tagName === "TEXTAREA" ||
+          el.tagName === "SELECT" ||
+          el.isContentEditable);
+      if (typing) return;
+      const input = document.querySelector<HTMLInputElement>(
+        'input[aria-label^="Point de départ"]',
+      );
+      if (input) {
+        event.preventDefault();
+        input.focus();
+        input.select();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   useEffect(() => {
     if (activeId === null) return;
@@ -258,6 +286,7 @@ export function SearchWorkspace() {
               ))}
             </select>
           )}
+          <ThemeToggle />
         </div>
       </header>
 
@@ -297,13 +326,17 @@ export function SearchWorkspace() {
                 />
               )}
               <div className="min-h-0 flex-1 overflow-y-auto">
-                <ResultsList
-                  results={visible}
-                  selectedId={selectedId}
-                  onSelect={selectFromList}
-                  onOpen={setOpenedId}
-                  autoScroll={selection.from === "map"}
-                />
+                {results.length === 0 && running ? (
+                  <ResultsSkeleton />
+                ) : (
+                  <ResultsList
+                    results={visible}
+                    selectedId={selectedId}
+                    onSelect={selectFromList}
+                    onOpen={setOpenedId}
+                    autoScroll={selection.from === "map"}
+                  />
+                )}
               </div>
             </div>
           ) : (
@@ -391,15 +424,27 @@ function progressRatio(search: SearchSummary): number {
 function EmptyState() {
   return (
     <div className="px-6 py-10 text-[13px] text-app-muted">
-      <p className="mb-3 text-app-text">Aucune recherche en cours.</p>
-      <p className="mb-2">
+      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full border border-app-border text-app-muted">
+        <RadarIcon size={20} />
+      </div>
+      <p className="mb-3 text-[15px] font-semibold tracking-tight text-balance text-app-text">
+        Prêt à balayer une zone.
+      </p>
+      <p className="mb-2 text-pretty">
         Indiquez une ville, un rayon et les secteurs à balayer, puis lancez le
         balayage. Les prospects apparaissent au fil de l’analyse, triés du plus
         au moins prometteur.
       </p>
-      <p>
+      <p className="text-pretty">
         Le score mesure ce qu’une refonte apporterait : un score élevé signale
         un site absent, mort, obsolète — sur une entreprise qui, elle, marche.
+      </p>
+      <p className="mt-4 text-[12.5px]">
+        Astuce : appuyez sur{" "}
+        <kbd className="rounded border border-app-border px-1 py-0.5 text-[11px] text-app-text">
+          /
+        </kbd>{" "}
+        pour cibler le champ de recherche.
       </p>
     </div>
   );

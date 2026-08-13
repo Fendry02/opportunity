@@ -127,7 +127,7 @@ export function SearchForm({
               <span>Secteurs balayés</span>
               <button
                 type="button"
-                className="text-app-accent hover:underline"
+                className="text-app-link hover:underline"
                 onClick={() =>
                   setSectors(
                     sectors.length === SECTORS.length
@@ -170,7 +170,7 @@ export function SearchForm({
             ? "Plafond journalier d'appels Google atteint. Reprenez demain, ou relevez PLACES_DAILY_CAP dans .env.local."
             : undefined
         }
-        className="h-9 rounded-app bg-app-accent px-4 text-sm font-medium text-white hover:bg-app-accent-hover disabled:cursor-not-allowed disabled:opacity-40"
+        className="h-9 rounded-app bg-app-accent px-4 text-sm font-medium text-white transition hover:bg-app-accent-hover active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-40"
       >
         {quotaExhausted
           ? "Plafond atteint"

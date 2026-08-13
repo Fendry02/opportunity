@@ -74,7 +74,7 @@ export function ResultsList({
             style={
               selected
                 ? {
-                    background: "#eef2ff",
+                    background: "var(--app-accent-soft)",
                     boxShadow: "inset 2px 0 0 var(--app-accent)",
                   }
                 : undefined
@@ -98,7 +98,7 @@ export function ResultsList({
                   <button
                     type="button"
                     onClick={() => onOpen(prospect.id)}
-                    className={`truncate text-left font-medium hover:text-app-accent ${
+                    className={`truncate text-left font-medium hover:text-app-link ${
                       prospect.optOut ? "text-app-muted line-through" : ""
                     }`}
                   >

@@ -1,12 +1,17 @@
 @import "tailwindcss";
 
 /*
- * Design system « pro épuré clair » (Linear/Notion).
+ * Design system « pro épuré » (Linear/Notion).
  * Une seule couleur d'accent (indigo). Les seuls éléments vivement colorés
  * sont les badges et pins de score.
  * Interdits : dégradés, ombres marquées, emojis décoratifs.
+ *
+ * Deux thèmes : clair par défaut, sombre via `prefers-color-scheme` ou le choix
+ * explicite `:root[data-theme="dark"]` (persisté, posé avant peinture par un
+ * petit script inline pour éviter tout flash).
  */
 :root {
+  color-scheme: light;
   --app-bg: #fafafa;
   --app-surface: #ffffff;
   --app-border: #e5e7eb;
@@ -15,6 +20,8 @@
   --app-muted: #6b7280;
   --app-accent: #4f46e5;
   --app-accent-hover: #4338ca;
+  --app-accent-soft: #eef2ff; /* fond de la ligne sélectionnée */
+  --app-link: #4f46e5; /* accent en texte : identique à l'accent en clair */
   --app-ok: #16a34a;
   --app-ko: #dc2626;
 
@@ -23,6 +30,46 @@
   --score-mid: #ea580c; /* 45-69 */
   --score-low: #ca8a04; /* 25-44 */
   --score-none: #9ca3af; /* < 25 */
+}
+
+/*
+ * Valeurs du thème sombre, factorisées : appliquées à la fois quand le système
+ * est en sombre (sauf choix explicite « clair ») et sur le choix explicite
+ * « sombre ». L'accent de remplissage reste assez foncé pour porter du texte
+ * blanc ; l'accent en texte (`--app-link`) s'éclaircit pour rester lisible.
+ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --app-bg: #0c0d10;
+    --app-surface: #16181d;
+    --app-border: #282a30;
+    --app-hover: #1f2127;
+    --app-text: #e7e8ea;
+    --app-muted: #9a9ca3;
+    --app-accent: #4f46e5;
+    --app-accent-hover: #6366f1;
+    --app-accent-soft: #1e1b3a;
+    --app-link: #a5b4fc;
+    --app-ok: #22c55e;
+    --app-ko: #f87171;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --app-bg: #0c0d10;
+  --app-surface: #16181d;
+  --app-border: #282a30;
+  --app-hover: #1f2127;
+  --app-text: #e7e8ea;
+  --app-muted: #9a9ca3;
+  --app-accent: #4f46e5;
+  --app-accent-hover: #6366f1;
+  --app-accent-soft: #1e1b3a;
+  --app-link: #a5b4fc;
+  --app-ok: #22c55e;
+  --app-ko: #f87171;
 }
 
 @theme inline {
@@ -34,6 +81,8 @@
   --color-app-muted: var(--app-muted);
   --color-app-accent: var(--app-accent);
   --color-app-accent-hover: var(--app-accent-hover);
+  --color-app-accent-soft: var(--app-accent-soft);
+  --color-app-link: var(--app-link);
   --color-app-ok: var(--app-ok);
   --color-app-ko: var(--app-ko);
   --color-score-high: var(--score-high);
@@ -104,7 +153,7 @@ body {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--app-accent) 18%, transparent);
 }
 
-/* Attribution CARTO / Leaflet, discrète. */
+/* Attribution CARTO / Leaflet, discrète. Le fond de carte reste clair. */
 .leaflet-container {
   font-family: inherit;
   background: #f2f2f2;
@@ -113,4 +162,15 @@ body {
 .leaflet-control-attribution {
   font-size: 10px;
   color: var(--app-muted);
+}
+
+/* Respect de la préférence système « moins d'animations ». */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
