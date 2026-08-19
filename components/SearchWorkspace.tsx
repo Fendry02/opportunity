@@ -16,6 +16,7 @@ import {
 import { SearchForm } from "./SearchForm";
 import { SetupNotice } from "./SetupNotice";
 import { ThemeToggle } from "./ThemeToggle";
+import { WebsiteJobsPanel } from "./WebsiteJobsPanel";
 import { RadarIcon } from "./icons";
 import { ApiError, describeError, fetchJson } from "@/lib/fetch-json";
 import { formatRadius } from "@/lib/format";
@@ -76,6 +77,8 @@ export function SearchWorkspace() {
   const [websiteGenerationMessage, setWebsiteGenerationMessage] = useState<string | null>(
     null,
   );
+  /** Panneau durable de suivi des agents, indépendant de la recherche ouverte. */
+  const [websiteJobsOpen, setWebsiteJobsOpen] = useState(false);
   const [error, setError] = useState<AppError | null>(null);
   const [history, setHistory] = useState<SearchSummary[]>([]);
   const [quota, setQuota] = useState<Quota | null>(null);
@@ -181,19 +184,33 @@ export function SearchWorkspace() {
     );
     try {
       const data = await fetchJson<{
-        summary: { selected: number; created: number; skipped: number; failed: number };
+        summary: {
+          selected: number;
+          created: number;
+          queued: number;
+          skipped: number;
+          failed: number;
+        };
       }>("/api/websites/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prospectIds }),
       });
-      const parts = [`${data.summary.created} site${data.summary.created > 1 ? "s" : ""} créé${data.summary.created > 1 ? "s" : ""}`];
+      const parts = [
+        `${data.summary.created} site${data.summary.created > 1 ? "s" : ""} créé${data.summary.created > 1 ? "s" : ""}`,
+      ];
+      if (data.summary.queued) {
+        parts.push(
+          `${data.summary.queued} mis en file pour finalisation`,
+        );
+      }
       if (data.summary.skipped) parts.push(`${data.summary.skipped} ignoré${data.summary.skipped > 1 ? "s" : ""}`);
       if (data.summary.failed) parts.push(`${data.summary.failed} en erreur`);
       setWebsiteGenerationMessage(
-        `${parts.join(" · ")} dans Programmes/websites. Chaque dossier contient index.html et PROMPT.md.`,
+        `${parts.join(" · ")} dans Programmes/websites.`,
       );
       setWebsiteSelection(new Set());
+      if (data.summary.queued > 0) setWebsiteJobsOpen(true);
     } catch (err) {
       setWebsiteGenerationMessage(describeError(err));
     } finally {
@@ -343,6 +360,7 @@ export function SearchWorkspace() {
       setResults([]);
       setWebsiteSelection(new Set());
       setWebsiteGenerationMessage(null);
+      setWebsiteJobsOpen(false);
       setSelection({ id: null, from: "list" });
       setOpenedId(null);
       setSearch(null);
@@ -372,6 +390,7 @@ export function SearchWorkspace() {
     setResults([]);
     setWebsiteSelection(new Set());
     setWebsiteGenerationMessage(null);
+    setWebsiteJobsOpen(false);
     setActiveId(searchId);
   }, []);
 
@@ -387,7 +406,7 @@ export function SearchWorkspace() {
           onSubmit={startSearch}
         />
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex max-w-full flex-wrap items-center justify-end gap-2">
           <QuotaBadge quota={quota} />
           {history.length > 0 && (
             <select
@@ -407,6 +426,17 @@ export function SearchWorkspace() {
               ))}
             </select>
           )}
+          <button
+            type="button"
+            onClick={() => {
+              setOpenedId(null);
+              setWebsiteJobsOpen(true);
+            }}
+            aria-pressed={websiteJobsOpen}
+            className="flex h-9 items-center rounded-app border border-app-border px-2.5 text-[12.5px] font-medium text-app-muted transition-colors hover:bg-app-hover hover:text-app-text active:scale-[0.96]"
+          >
+            Sites
+          </button>
           <ThemeToggle />
         </div>
       </header>
@@ -416,7 +446,11 @@ export function SearchWorkspace() {
       <StatusBar search={search} error={error} resultCount={results.length} />
 
       <div className="flex min-h-0 flex-1">
-        <div className="min-w-0 basis-[55%] border-r border-app-border">
+        <div
+          className={`min-w-0 basis-[55%] border-r border-app-border ${
+            websiteJobsOpen ? "hidden sm:block" : ""
+          }`}
+        >
           <ResultsMap
             center={search ? { lat: search.lat, lng: search.lng } : null}
             radiusM={search?.radiusM ?? null}
@@ -427,8 +461,14 @@ export function SearchWorkspace() {
         </div>
 
         {/* Le panneau prend la place de la liste, jamais celle de la carte. */}
-        <div className="min-w-0 basis-[45%] bg-app-surface">
-          {openedId ? (
+        <div
+          className={`min-w-0 bg-app-surface ${
+            websiteJobsOpen ? "basis-full sm:basis-[45%]" : "basis-[45%]"
+          }`}
+        >
+          {websiteJobsOpen ? (
+            <WebsiteJobsPanel onClose={() => setWebsiteJobsOpen(false)} />
+          ) : openedId ? (
             <ProspectPanel
               key={openedId}
               prospectId={openedId}
@@ -469,7 +509,10 @@ export function SearchWorkspace() {
                     results={visible}
                     selectedId={selectedId}
                     onSelect={selectFromList}
-                    onOpen={setOpenedId}
+                    onOpen={(id) => {
+                      setWebsiteJobsOpen(false);
+                      setOpenedId(id);
+                    }}
                     autoScroll={selection.from === "map"}
                     websiteSelection={websiteSelection}
                     onToggleWebsiteSelection={toggleWebsiteSelection}

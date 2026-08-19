@@ -11,9 +11,12 @@ import path from "node:path";
  */
 type DbGlobal = typeof globalThis & {
   __opportunityDb?: Database.Database;
+  /** Change quand une migration doit être rejouée après un hot reload. */
+  __opportunityDbSchemaVersion?: number;
 };
 
 const g = globalThis as DbGlobal;
+const SCHEMA_VERSION = 2;
 
 const DB_PATH =
   process.env.OPPORTUNITY_DB_PATH ??
@@ -29,12 +32,22 @@ function open(): Database.Database {
   db.pragma("busy_timeout = 5000");
   migrate(db);
   recoverInterruptedSearches(db);
+  recoverInterruptedWebsiteJobs(db);
   return db;
 }
 
 export function getDb(): Database.Database {
   if (!g.__opportunityDb) {
     g.__opportunityDb = open();
+    g.__opportunityDbSchemaVersion = SCHEMA_VERSION;
+  } else if (g.__opportunityDbSchemaVersion !== SCHEMA_VERSION) {
+    // En développement, Fast Refresh garde la connexion SQLite sur globalThis.
+    // Sans ce rattrapage, une table ajoutée après le démarrage reste absente
+    // jusqu'au redémarrage manuel du serveur.
+    migrate(g.__opportunityDb);
+    recoverInterruptedSearches(g.__opportunityDb);
+    recoverInterruptedWebsiteJobs(g.__opportunityDb);
+    g.__opportunityDbSchemaVersion = SCHEMA_VERSION;
   }
   return g.__opportunityDb;
 }
@@ -154,6 +167,22 @@ function migrate(db: Database.Database): void {
     );
     CREATE INDEX IF NOT EXISTS idx_api_cache_expires ON api_cache(expires_at);
     CREATE INDEX IF NOT EXISTS idx_api_cache_source ON api_cache(source);
+
+    CREATE TABLE IF NOT EXISTS website_jobs (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      business_id TEXT    NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+      directory   TEXT    NOT NULL,
+      status      TEXT    NOT NULL DEFAULT 'pending'
+                  CHECK (status IN ('pending', 'running', 'ready', 'failed')),
+      error       TEXT,
+      output      TEXT,
+      attempts    INTEGER NOT NULL DEFAULT 0,
+      created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+      started_at  TEXT,
+      finished_at TEXT
+    );
+    CREATE INDEX IF NOT EXISTS idx_website_jobs_status
+      ON website_jobs(status, id);
   `);
 
   // Colonnes ajoutées après coup : les CREATE ... IF NOT EXISTS ci-dessus ne
@@ -197,6 +226,18 @@ function recoverInterruptedSearches(db: Database.Database): void {
     `UPDATE searches
         SET status = 'error',
             error  = 'Recherche interrompue par un redémarrage du serveur'
+      WHERE status = 'running'`,
+  ).run();
+}
+
+/** Même principe pour un agent local arrêté avec le serveur : le job reste
+ * inspectable et peut être relancé explicitement au lieu de rester bloqué. */
+function recoverInterruptedWebsiteJobs(db: Database.Database): void {
+  db.prepare(
+    `UPDATE website_jobs
+        SET status = 'failed',
+            error = 'Génération interrompue par un redémarrage du serveur',
+            finished_at = datetime('now')
       WHERE status = 'running'`,
   ).run();
 }

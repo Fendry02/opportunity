@@ -117,12 +117,14 @@ export function createWebsiteProject(
   prospect: ProspectDetail,
   options: WebsiteProjectOptions = {},
 ): WebsiteProjectResult {
-  const rootDir = path.resolve(options.rootDir ?? DEFAULT_WEBSITES_DIR);
+  const rootDir = path.resolve(
+    /* turbopackIgnore: true */ options.rootDir ?? DEFAULT_WEBSITES_DIR,
+  );
   const directory = path.resolve(rootDir, slugify(prospect.name));
   ensureInsideRoot(rootDir, directory);
 
   fs.mkdirSync(rootDir, { recursive: true });
-  if (fs.existsSync(directory)) {
+  if (fs.existsSync(/* turbopackIgnore: true */ directory)) {
     return {
       status: "skipped",
       directory,

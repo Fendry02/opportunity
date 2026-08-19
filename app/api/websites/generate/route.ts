@@ -6,8 +6,10 @@ import {
   createWebsiteProject,
   runWebsiteGeneration,
 } from "@/lib/site-generation";
+import { enqueueWebsiteJob, startWebsiteQueue } from "@/lib/website-jobs";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 /**
  * Un lot reste volontairement court : l'enrichissement utilise des sources
@@ -33,6 +35,28 @@ export async function POST(request: Request) {
     enrichProspect,
     createProject: createWebsiteProject,
   });
+  const queuedJobIds: number[] = [];
+
+  for (const result of results) {
+    if (result.status !== "created" || !result.directory) continue;
+    try {
+      queuedJobIds.push(
+        enqueueWebsiteJob({
+          businessId: result.prospectId,
+          directory: result.directory,
+        }).id,
+      );
+      result.message = "Vitrine créée et mise en file pour finalisation.";
+    } catch (error) {
+      result.status = "failed";
+      result.message =
+        error instanceof Error
+          ? `Vitrine créée mais non mise en file : ${error.message}`
+          : "Vitrine créée mais non mise en file.";
+    }
+  }
+  if (queuedJobIds.length > 0) startWebsiteQueue();
+
   const created = results.filter((entry) => entry.status === "created").length;
 
   return NextResponse.json({
@@ -40,8 +64,10 @@ export async function POST(request: Request) {
     summary: {
       selected: new Set(parsed.data.prospectIds).size,
       created,
+      queued: queuedJobIds.length,
       skipped: results.filter((entry) => entry.status === "skipped").length,
       failed: results.filter((entry) => entry.status === "failed").length,
     },
+    queuedJobIds,
   });
 }

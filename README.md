@@ -153,17 +153,29 @@ survit pas au contact d'un dirigeant.
 
 Dans la liste des résultats, cochez les établissements à traiter, puis cliquez
 sur **Créer N sites**. L'application enrichit chaque fiche avant de préparer sa
-vitrine. Un refus de démarchage n'affiche pas de case et ne peut pas entrer dans
-le lot.
+vitrine, puis la place dans une file locale. Un refus de démarchage n'affiche
+pas de case et ne peut pas entrer dans le lot.
 
 Chaque projet arrive dans `Programmes/websites/<nom-du-prospect>/` avec :
 
 - `index.html`, une vitrine statique déjà ouvrable, adaptée au mobile, avec
   appels à l'action, animations discrètes, note et volume d'avis Google, puis
   carte et lien d'itinéraire Google Maps ;
-- `PROMPT.md`, le brief précis à transmettre à un agent de code pour poursuivre
-  le travail dans ce seul dossier ;
+- `PROMPT.md`, le brief lu par Claude Code pour poursuivre le travail dans ce
+  seul dossier ;
 - `site.json`, la trace de la génération et de la fiche source.
+
+Le bouton **Sites** du bandeau ouvre le suivi : attente, exécution, site prêt ou
+erreur. Un projet prêt s'ouvre dans un nouvel onglet; le prompt reste
+consultable, et un échec peut être relancé. Claude Code démarre depuis le
+dossier de chaque vitrine, avec les outils `Read`, `Edit`, `Write`, `Glob` et
+`Grep`, sans shell ni publication.
+
+Par défaut, Opportunity cherche la commande `claude` et plafonne son budget à
+3 USD par vitrine. Installez et connectez Claude Code avant de créer un lot, ou
+modifiez `OPPORTUNITY_WEBSITE_AGENT_COMMAND` et
+`OPPORTUNITY_WEBSITE_AGENT_MAX_BUDGET_USD` dans `.env.local`. Si la commande
+manque, le job passe en erreur avec le diagnostic et reste relançable.
 
 Les répertoires existants ne sont jamais remplacés. Relancer une création pour
 le même nom le signale comme ignorée, ce qui évite d'écraser une retouche en

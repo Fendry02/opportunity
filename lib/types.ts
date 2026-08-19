@@ -4,6 +4,24 @@ import type { ScoreLine, ScoreTier } from "./scoring";
 
 export type SearchStatus = "running" | "done" | "error";
 
+/** Cycle de vie d'une vitrine confiée à l'agent de code local. */
+export type WebsiteJobStatus = "pending" | "running" | "ready" | "failed";
+
+/** Vue sérialisable du job, partagée entre les routes et le panneau de suivi. */
+export type WebsiteJob = {
+  id: number;
+  businessId: string;
+  businessName: string;
+  directory: string;
+  status: WebsiteJobStatus;
+  error: string | null;
+  output: string | null;
+  attempts: number;
+  createdAt: string;
+  startedAt: string | null;
+  finishedAt: string | null;
+};
+
 /**
  * Suivi de la prise de contact, attaché à l'établissement : il suit donc le
  * prospect d'un balayage à l'autre. `to_contact` est l'état par défaut.
