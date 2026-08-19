@@ -38,6 +38,8 @@ export function ResultsToolbar({
   onToggleTier,
   hideOptOut,
   onHideOptOutChange,
+  hideIgnored,
+  onHideIgnoredChange,
   contactFilter,
   onContactFilterChange,
 }: {
@@ -54,11 +56,14 @@ export function ResultsToolbar({
   onToggleTier: (tier: ScoreTier) => void;
   hideOptOut: boolean;
   onHideOptOutChange: (hide: boolean) => void;
+  hideIgnored: boolean;
+  onHideIgnoredChange: (hide: boolean) => void;
   contactFilter: ContactFilter;
   onContactFilterChange: (value: ContactFilter) => void;
 }) {
   const counts = countByTier(results);
   const optOutCount = results.filter((r) => r.optOut).length;
+  const ignoredCount = results.filter((r) => r.ignored).length;
   const briefableCount = results.filter(
     (r) => !r.optOut && r.score !== null,
   ).length;
@@ -109,6 +114,18 @@ export function ResultsToolbar({
                 className="accent-app-accent"
               />
               Masquer les {optOutCount} écarté{optOutCount > 1 ? "s" : ""}
+            </label>
+          )}
+
+          {ignoredCount > 0 && (
+            <label className="flex cursor-pointer items-center gap-1.5 text-[12.5px] text-app-muted">
+              <input
+                type="checkbox"
+                checked={hideIgnored}
+                onChange={(e) => onHideIgnoredChange(e.target.checked)}
+                className="accent-app-accent"
+              />
+              Masquer les {ignoredCount} ignoré{ignoredCount > 1 ? "s" : ""}
             </label>
           )}
 
@@ -235,12 +252,14 @@ export function applyFilters(
     sort: SortMode;
     activeTiers: ScoreTier[];
     hideOptOut: boolean;
+    hideIgnored?: boolean;
     /** Filtre de suivi ; absent ou « all » = tous. */
     contactFilter?: ContactFilter;
   },
 ): ProspectSummary[] {
   const filtered = results.filter((result) => {
     if (options.hideOptOut && result.optOut) return false;
+    if (options.hideIgnored && result.ignored) return false;
     // Le filtre de suivi s'applique à tous, écartés compris.
     if (
       options.contactFilter &&
@@ -249,15 +268,18 @@ export function applyFilters(
     ) {
       return false;
     }
-    // Un prospect écarté n'a pas de palier : il échappe au filtre par couleur
-    // tant qu'on ne demande pas explicitement de le masquer.
-    if (options.activeTiers.length === 0 || result.optOut) return true;
+    // Un prospect écarté ou ignoré n'a pas de palier : il échappe au filtre par
+    // couleur tant qu'on ne demande pas explicitement de le masquer.
+    if (options.activeTiers.length === 0 || result.optOut || result.ignored) {
+      return true;
+    }
     return result.tier !== null && options.activeTiers.includes(result.tier);
   });
 
   return [...filtered].sort((a, b) => {
-    // Les écartés et les non notés restent en fin de liste, quel que soit le tri.
-    const rank = (r: ProspectSummary) => (r.optOut ? 2 : r.score === null ? 1 : 0);
+    // Ignorés, écartés et non notés restent en fin de liste, quel que soit le tri.
+    const rank = (r: ProspectSummary) =>
+      r.ignored ? 3 : r.optOut ? 2 : r.score === null ? 1 : 0;
     const byRank = rank(a) - rank(b);
     if (byRank !== 0) return byRank;
 

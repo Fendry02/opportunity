@@ -77,6 +77,8 @@ export type ProspectSummary = {
   optOut: string | null;
   /** Suivi de la prise de contact (défaut : à contacter). */
   contactStatus: ContactStatus;
+  /** Ignoré manuellement : grisé et repoussé en bas de liste. */
+  ignored: boolean;
   /** État du site, résumé pour la liste. */
   siteState: "none" | "dead" | "alive" | "pending" | "opt_out";
   /** Signaux mis en avant sous forme d'icônes discrètes dans la liste. */
@@ -157,6 +159,7 @@ export type ProspectDetail = {
   tier: ScoreTier | null;
   optOut: string | null;
   contactStatus: ContactStatus;
+  ignored: boolean;
   breakdown: ScoreLine[];
   analysis: SiteAnalysisView | null;
   enrichment: EnrichmentView | null;

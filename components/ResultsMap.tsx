@@ -29,9 +29,11 @@ function pinIcon(prospect: ProspectSummary, selected: boolean): L.DivIcon {
   // Un prospect écarté n'a pas de score : pin neutre et barré.
   const color = prospect.optOut
     ? "#9ca3af"
-    : prospect.score === null
-      ? "#d1d5db"
-      : TIER_COLOR[prospect.tier ?? scoreTier(prospect.score)];
+    : prospect.ignored
+      ? "#9ca3af"
+      : prospect.score === null
+        ? "#d1d5db"
+        : TIER_COLOR[prospect.tier ?? scoreTier(prospect.score)];
   // SVG inline plutôt qu'un caractère : `⃠` est une marque combinante, elle ne
   // se rend pas de la même façon d'un système à l'autre.
   const label = prospect.optOut

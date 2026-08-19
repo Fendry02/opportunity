@@ -186,6 +186,7 @@ describe("brief markdown", () => {
     tier: "high",
     optOut: null,
     contactStatus: "to_contact",
+    ignored: false,
     breakdown: [
       {
         key: "base.noSite",

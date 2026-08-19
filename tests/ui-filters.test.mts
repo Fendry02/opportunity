@@ -25,6 +25,7 @@ function prospect(over: Partial<ProspectSummary>): ProspectSummary {
     tier: null,
     optOut: null,
     contactStatus: "to_contact",
+    ignored: false,
     siteState: "alive",
     flags: null,
     ...over,
@@ -154,6 +155,43 @@ describe("filtre de suivi", () => {
       hideOptOut: false,
     });
     assert.equal(rows.length, 3);
+  });
+});
+
+describe("prospects ignorés", () => {
+  const withIgnored: ProspectSummary[] = [
+    prospect({ id: "a", score: 92, tier: "high" }),
+    prospect({ id: "b", score: 52, tier: "mid", ignored: true }),
+    prospect({ id: "c", score: 15, tier: "none" }),
+  ];
+
+  it("repousse les ignorés en bas de liste", () => {
+    const rows = applyFilters(withIgnored, {
+      sort: "score",
+      activeTiers: [],
+      hideOptOut: false,
+    });
+    // « b » a le 2e meilleur score mais, ignoré, il passe dernier.
+    assert.deepEqual(ids(rows), ["a", "c", "b"]);
+  });
+
+  it("masque les ignorés à la demande", () => {
+    const rows = applyFilters(withIgnored, {
+      sort: "score",
+      activeTiers: [],
+      hideOptOut: false,
+      hideIgnored: true,
+    });
+    assert.deepEqual(ids(rows), ["a", "c"]);
+  });
+
+  it("un ignoré échappe au filtre par palier", () => {
+    const rows = applyFilters(withIgnored, {
+      sort: "score",
+      activeTiers: ["high"],
+      hideOptOut: false,
+    });
+    assert.deepEqual(ids(rows), ["a", "b"]);
   });
 });
 

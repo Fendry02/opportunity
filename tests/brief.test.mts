@@ -26,6 +26,7 @@ function detail(over: Partial<ProspectDetail>): ProspectDetail {
     tier: "mid",
     optOut: null,
     contactStatus: "to_contact",
+    ignored: false,
     breakdown: [],
     analysis: null,
     enrichment: null,

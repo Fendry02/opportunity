@@ -167,6 +167,8 @@ function migrate(db: Database.Database): void {
   // d'un balayage à l'autre. NULL = jamais marqué = « à contacter ».
   addColumnIfMissing(db, "businesses", "contact_status", "TEXT");
   addColumnIfMissing(db, "businesses", "contact_updated_at", "TEXT");
+  // Ignoré manuellement : écarté de la vue à la main, indépendamment du score.
+  addColumnIfMissing(db, "businesses", "ignored", "INTEGER NOT NULL DEFAULT 0");
 }
 
 function addColumnIfMissing(

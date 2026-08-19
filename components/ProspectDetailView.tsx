@@ -76,6 +76,29 @@ export function ProspectDetailView({
     }
   }
 
+  async function toggleIgnored() {
+    const previous = prospect.ignored;
+    const next = !previous;
+    setError(null);
+    setProspect((current) => ({ ...current, ignored: next }));
+    try {
+      const data = await fetchJson<{ prospect: ProspectDetail }>(
+        `/api/prospects/${encodeURIComponent(prospect.id)}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ignored: next }),
+        },
+      );
+      setProspect(data.prospect);
+    } catch (err) {
+      setProspect((current) => ({ ...current, ignored: previous }));
+      setError(
+        err instanceof ApiError ? err.message : "Mise à jour impossible.",
+      );
+    }
+  }
+
   const { analysis, enrichment } = prospect;
   const compact = variant === "panel";
   // La fiche est un h1 en pleine page, un h2 dans le panneau (le h1 est celui
@@ -128,6 +151,10 @@ export function ProspectDetailView({
               onClick={() => void enrich()}
             />
             <BriefLink id={prospect.id} />
+            <IgnoreButton
+              ignored={prospect.ignored}
+              onClick={() => void toggleIgnored()}
+            />
           </div>
         )}
       </header>
@@ -145,6 +172,10 @@ export function ProspectDetailView({
             onClick={() => void enrich()}
           />
           <BriefLink id={prospect.id} />
+          <IgnoreButton
+            ignored={prospect.ignored}
+            onClick={() => void toggleIgnored()}
+          />
         </div>
       )}
 
@@ -157,6 +188,13 @@ export function ProspectDetailView({
             analysée, ni notée, et aucun brief n’est produit.
           </p>
         </div>
+      )}
+
+      {prospect.ignored && !prospect.optOut && (
+        <p className="mt-4 rounded-app border border-app-border bg-app-surface px-3 py-2 text-[12.5px] text-app-muted">
+          Prospect ignoré : grisé et repoussé en bas de la liste. « Ne plus
+          ignorer » le réactive.
+        </p>
       )}
 
       {error && (
@@ -386,6 +424,24 @@ function EnrichButton({
       className="h-9 rounded-app border border-app-border bg-app-surface px-3 text-sm transition hover:bg-app-hover active:scale-[0.96] disabled:opacity-40"
     >
       {enriching ? "Enrichissement…" : enriched ? "Réactualiser" : "Enrichir"}
+    </button>
+  );
+}
+
+function IgnoreButton({
+  ignored,
+  onClick,
+}: {
+  ignored: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="h-9 rounded-app border border-app-border bg-app-surface px-3 text-sm text-app-muted transition hover:bg-app-hover hover:text-app-text active:scale-[0.96]"
+    >
+      {ignored ? "Ne plus ignorer" : "Ignorer"}
     </button>
   );
 }

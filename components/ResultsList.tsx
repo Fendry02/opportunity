@@ -86,7 +86,7 @@ export function ResultsList({
               aria-label={`Ouvrir la fiche de ${prospect.name}`}
               className={`group flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left transition-colors ${
                 selected ? "" : "hover:bg-app-hover"
-              }`}
+              } ${prospect.ignored ? "opacity-55" : ""}`}
             >
               {prospect.optOut ? (
                 <span
@@ -127,6 +127,11 @@ export function ResultsList({
                     <span>· {SITE_STATE_LABEL[prospect.siteState]}</span>
                   )}
                   <ContactStatusChip status={prospect.contactStatus} />
+                  {prospect.ignored && (
+                    <span className="rounded-full border border-app-border px-1.5 py-0.5 text-[11px] text-app-muted">
+                      Ignoré
+                    </span>
+                  )}
                 </div>
 
                 {prospect.optOut && (

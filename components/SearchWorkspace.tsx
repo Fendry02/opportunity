@@ -78,11 +78,19 @@ export function SearchWorkspace() {
   const [sort, setSort] = useState<SortMode>("score");
   const [activeTiers, setActiveTiers] = useState<ScoreTier[]>([]);
   const [hideOptOut, setHideOptOut] = useState(false);
+  const [hideIgnored, setHideIgnored] = useState(false);
   const [contactFilter, setContactFilter] = useState<ContactFilter>("all");
 
   const visible = useMemo(
-    () => applyFilters(results, { sort, activeTiers, hideOptOut, contactFilter }),
-    [results, sort, activeTiers, hideOptOut, contactFilter],
+    () =>
+      applyFilters(results, {
+        sort,
+        activeTiers,
+        hideOptOut,
+        hideIgnored,
+        contactFilter,
+      }),
+    [results, sort, activeTiers, hideOptOut, hideIgnored, contactFilter],
   );
 
   const selectFromMap = useCallback(
@@ -333,6 +341,8 @@ export function SearchWorkspace() {
                   onToggleTier={toggleTier}
                   hideOptOut={hideOptOut}
                   onHideOptOutChange={setHideOptOut}
+                  hideIgnored={hideIgnored}
+                  onHideIgnoredChange={setHideIgnored}
                   contactFilter={contactFilter}
                   onContactFilterChange={setContactFilter}
                 />
