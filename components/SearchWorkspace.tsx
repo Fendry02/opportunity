@@ -11,6 +11,7 @@ import {
   type ContactFilter,
   type SortMode,
   applyFilters,
+  isWebsiteGenerationEligible,
 } from "./ResultsToolbar";
 import { SearchForm } from "./SearchForm";
 import { SetupNotice } from "./SetupNotice";
@@ -40,6 +41,7 @@ const POLL_INTERVAL_MS = 1500;
  * redémarre) avant de rendre la main à l'utilisateur avec un « Réessayer ».
  */
 const MAX_POLL_RETRIES = 4;
+const MAX_WEBSITE_SELECTION = 12;
 
 /** Erreur affichée dans le bandeau de statut, avec un éventuel « Réessayer ». */
 type AppError = { message: string; retry?: () => void };
@@ -66,6 +68,14 @@ export function SearchWorkspace() {
   const selectedId = selection.id;
   /** Prospect dont la fiche est ouverte dans le panneau, à droite. */
   const [openedId, setOpenedId] = useState<string | null>(null);
+  /** Prospects choisis pour enrichissement + création de vitrines en lot. */
+  const [websiteSelection, setWebsiteSelection] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [generatingWebsites, setGeneratingWebsites] = useState(false);
+  const [websiteGenerationMessage, setWebsiteGenerationMessage] = useState<string | null>(
+    null,
+  );
   const [error, setError] = useState<AppError | null>(null);
   const [history, setHistory] = useState<SearchSummary[]>([]);
   const [quota, setQuota] = useState<Quota | null>(null);
@@ -119,6 +129,77 @@ export function SearchWorkspace() {
       ),
     [],
   );
+
+  const toggleWebsiteSelection = useCallback((id: string) => {
+    setWebsiteSelection((current) => {
+      const next = new Set(current);
+      if (next.has(id)) {
+        next.delete(id);
+        return next;
+      }
+      if (next.size >= MAX_WEBSITE_SELECTION) {
+        setWebsiteGenerationMessage(
+          `La création en lot est limitée à ${MAX_WEBSITE_SELECTION} prospects.`,
+        );
+        return current;
+      }
+      next.add(id);
+      return next;
+    });
+  }, []);
+
+  const addVisibleToWebsiteSelection = useCallback(() => {
+    setWebsiteSelection((current) => {
+      const next = new Set(current);
+      const eligibleIds = visible
+        .filter(isWebsiteGenerationEligible)
+        .map((prospect) => prospect.id)
+        .filter((id) => !next.has(id));
+      const room = MAX_WEBSITE_SELECTION - next.size;
+      for (const id of eligibleIds.slice(0, Math.max(0, room))) next.add(id);
+      if (eligibleIds.length > room) {
+        setWebsiteGenerationMessage(
+          `Les ${MAX_WEBSITE_SELECTION} premiers prospects disponibles ont été retenus.`,
+        );
+      }
+      return next;
+    });
+  }, [visible]);
+
+  const clearWebsiteSelection = useCallback(() => {
+    setWebsiteSelection(new Set());
+    setWebsiteGenerationMessage(null);
+  }, []);
+
+  const generateWebsites = useCallback(async () => {
+    const prospectIds = [...websiteSelection];
+    if (prospectIds.length === 0) return;
+
+    setGeneratingWebsites(true);
+    setWebsiteGenerationMessage(
+      `Enrichissement de ${prospectIds.length} prospect${prospectIds.length > 1 ? "s" : ""}, puis création des vitrines…`,
+    );
+    try {
+      const data = await fetchJson<{
+        summary: { selected: number; created: number; skipped: number; failed: number };
+      }>("/api/websites/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prospectIds }),
+      });
+      const parts = [`${data.summary.created} site${data.summary.created > 1 ? "s" : ""} créé${data.summary.created > 1 ? "s" : ""}`];
+      if (data.summary.skipped) parts.push(`${data.summary.skipped} ignoré${data.summary.skipped > 1 ? "s" : ""}`);
+      if (data.summary.failed) parts.push(`${data.summary.failed} en erreur`);
+      setWebsiteGenerationMessage(
+        `${parts.join(" · ")} dans Programmes/websites. Chaque dossier contient index.html et PROMPT.md.`,
+      );
+      setWebsiteSelection(new Set());
+    } catch (err) {
+      setWebsiteGenerationMessage(describeError(err));
+    } finally {
+      setGeneratingWebsites(false);
+    }
+  }, [websiteSelection]);
 
   useEffect(() => {
     let cancelled = false;
@@ -204,6 +285,17 @@ export function SearchWorkspace() {
         failures = 0;
         setSearch(data.search);
         setResults(data.results);
+        setWebsiteSelection((current) => {
+          const activeIds = new Set(
+            data.results
+              .filter(isWebsiteGenerationEligible)
+              .map((prospect) => prospect.id),
+          );
+          const next = new Set([...current].filter((id) => activeIds.has(id)));
+          const unchanged =
+            next.size === current.size && [...next].every((id) => current.has(id));
+          return unchanged ? current : next;
+        });
 
         if (data.search.status === "running") {
           setError(null);
@@ -249,6 +341,8 @@ export function SearchWorkspace() {
     async (input: { city: string; radiusM: number; sectors: string[] }) => {
       setError(null);
       setResults([]);
+      setWebsiteSelection(new Set());
+      setWebsiteGenerationMessage(null);
       setSelection({ id: null, from: "list" });
       setOpenedId(null);
       setSearch(null);
@@ -276,6 +370,8 @@ export function SearchWorkspace() {
     // nouvelle liste — on croit que la recherche n'a rien renvoyé.
     setOpenedId(null);
     setResults([]);
+    setWebsiteSelection(new Set());
+    setWebsiteGenerationMessage(null);
     setActiveId(searchId);
   }, []);
 
@@ -344,6 +440,7 @@ export function SearchWorkspace() {
               {results.length > 0 && (
                 <ResultsToolbar
                   results={results}
+                  visibleResults={visible}
                   shown={visible.length}
                   searchId={search.id}
                   sort={sort}
@@ -356,6 +453,12 @@ export function SearchWorkspace() {
                   onHideIgnoredChange={setHideIgnored}
                   contactFilter={contactFilter}
                   onContactFilterChange={setContactFilter}
+                  selectedWebsiteIds={websiteSelection}
+                  onAddVisibleToWebsiteSelection={addVisibleToWebsiteSelection}
+                  onClearWebsiteSelection={clearWebsiteSelection}
+                  onGenerateWebsites={() => void generateWebsites()}
+                  generatingWebsites={generatingWebsites}
+                  websiteGenerationMessage={websiteGenerationMessage}
                 />
               )}
               <div className="min-h-0 flex-1 overflow-y-auto">
@@ -368,6 +471,8 @@ export function SearchWorkspace() {
                     onSelect={selectFromList}
                     onOpen={setOpenedId}
                     autoScroll={selection.from === "map"}
+                    websiteSelection={websiteSelection}
+                    onToggleWebsiteSelection={toggleWebsiteSelection}
                   />
                 )}
               </div>

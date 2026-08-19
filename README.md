@@ -50,6 +50,8 @@ d'un cache SQLite local qui vous appartient.
   exporter un brief Markdown prêt pour la prise de contact.
 - Exporter tout un balayage d'un coup : un seul Markdown réunit les briefs de
   tous les prospects notés, triés par score.
+- Cocher jusqu'à 12 prospects et générer pour chacun une première vitrine,
+  précédée de son enrichissement, dans le dossier local `Programmes/websites`.
 - Suivre la prise de contact prospect par prospect — à contacter, contacté, pas
   intéressé, client — un statut qui suit l'entreprise d'un balayage à l'autre.
 - Travailler en thème clair ou sombre, au choix ou selon le réglage du système.
@@ -146,6 +148,27 @@ _Non identifié._ Lancer l'enrichissement depuis la fiche, ou appeler en demanda
 
 Chaque défaut porte son propre argument commercial, parce que le chiffre seul ne
 survit pas au contact d'un dirigeant.
+
+## Préparer des sites par lot
+
+Dans la liste des résultats, cochez les établissements à traiter, puis cliquez
+sur **Créer N sites**. L'application enrichit chaque fiche avant de préparer sa
+vitrine. Un refus de démarchage n'affiche pas de case et ne peut pas entrer dans
+le lot.
+
+Chaque projet arrive dans `Programmes/websites/<nom-du-prospect>/` avec :
+
+- `index.html`, une vitrine statique déjà ouvrable, adaptée au mobile, avec
+  appels à l'action, animations discrètes, note et volume d'avis Google, puis
+  carte et lien d'itinéraire Google Maps ;
+- `PROMPT.md`, le brief précis à transmettre à un agent de code pour poursuivre
+  le travail dans ce seul dossier ;
+- `site.json`, la trace de la génération et de la fiche source.
+
+Les répertoires existants ne sont jamais remplacés. Relancer une création pour
+le même nom le signale comme ignorée, ce qui évite d'écraser une retouche en
+cours. Définissez `OPPORTUNITY_WEBSITES_DIR` si les vitrines doivent vivre sur
+un autre volume.
 
 <p align="center">
   <img src="public/screenshots/02-diagnostic.png" alt="Fiche prospect : identité, puis le diagnostic chiffré avec un argument commercial par défaut" width="620">

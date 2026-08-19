@@ -30,6 +30,7 @@ const TIER_RANGE: Record<ScoreTier, string> = {
 
 export function ResultsToolbar({
   results,
+  visibleResults,
   shown,
   searchId,
   sort,
@@ -42,9 +43,17 @@ export function ResultsToolbar({
   onHideIgnoredChange,
   contactFilter,
   onContactFilterChange,
+  selectedWebsiteIds,
+  onAddVisibleToWebsiteSelection,
+  onClearWebsiteSelection,
+  onGenerateWebsites,
+  generatingWebsites,
+  websiteGenerationMessage,
 }: {
   /** Tous les résultats de la recherche, avant filtrage. */
   results: ProspectSummary[];
+  /** Résultats actuellement visibles : cible de l'ajout à la sélection. */
+  visibleResults: ProspectSummary[];
   /** Nombre affiché après filtrage. */
   shown: number;
   /** Recherche courante : cible de l'export groupé des briefs. */
@@ -60,6 +69,13 @@ export function ResultsToolbar({
   onHideIgnoredChange: (hide: boolean) => void;
   contactFilter: ContactFilter;
   onContactFilterChange: (value: ContactFilter) => void;
+  /** Sélection locale destinée à la génération en lot. */
+  selectedWebsiteIds: ReadonlySet<string>;
+  onAddVisibleToWebsiteSelection: () => void;
+  onClearWebsiteSelection: () => void;
+  onGenerateWebsites: () => void;
+  generatingWebsites: boolean;
+  websiteGenerationMessage: string | null;
 }) {
   const counts = countByTier(results);
   const optOutCount = results.filter((r) => r.optOut).length;
@@ -68,6 +84,8 @@ export function ResultsToolbar({
     (r) => !r.optOut && r.score !== null,
   ).length;
   const filtered = shown !== results.length;
+  const eligibleVisible = visibleResults.filter(isWebsiteGenerationEligible);
+  const selectedCount = selectedWebsiteIds.size;
 
   return (
     <div className="sticky top-0 z-10 border-b border-app-border bg-app-surface px-4 py-2">
@@ -140,8 +158,55 @@ export function ResultsToolbar({
           )}
         </div>
       </div>
+      <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-app-border pt-2">
+        <span className="text-[12.5px] font-medium text-app-text tnum">
+          {selectedCount} sélectionné{selectedCount > 1 ? "s" : ""} pour un site
+        </span>
+        {eligibleVisible.length > 0 && (
+          <button
+            type="button"
+            onClick={onAddVisibleToWebsiteSelection}
+            disabled={generatingWebsites || selectedCount >= 12}
+            className="h-8 rounded-app border border-app-border px-2.5 text-[12.5px] font-medium transition hover:bg-app-hover active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-45"
+          >
+            Ajouter les visibles
+          </button>
+        )}
+        {selectedCount > 0 && (
+          <>
+            <button
+              type="button"
+              onClick={onClearWebsiteSelection}
+              disabled={generatingWebsites}
+              className="h-8 rounded-app px-2 text-[12.5px] text-app-muted transition hover:bg-app-hover hover:text-app-text disabled:opacity-45"
+            >
+              Effacer
+            </button>
+            <button
+              type="button"
+              onClick={onGenerateWebsites}
+              disabled={generatingWebsites}
+              className="ml-auto h-8 rounded-app bg-app-accent px-2.5 text-[12.5px] font-semibold text-white transition hover:bg-app-accent-hover active:scale-[0.96] disabled:cursor-wait disabled:opacity-60"
+            >
+              {generatingWebsites
+                ? "Enrichissement et création…"
+                : `Créer ${selectedCount} site${selectedCount > 1 ? "s" : ""}`}
+            </button>
+          </>
+        )}
+        {websiteGenerationMessage && (
+          <p className="basis-full text-[12.5px] text-app-muted" role="status">
+            {websiteGenerationMessage}
+          </p>
+        )}
+      </div>
     </div>
   );
+}
+
+/** Un prospect respectant un refus explicite ne peut jamais être sélectionné. */
+export function isWebsiteGenerationEligible(prospect: ProspectSummary): boolean {
+  return !prospect.optOut;
 }
 
 function ContactFilterSelect({

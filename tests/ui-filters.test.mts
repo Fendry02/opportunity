@@ -3,7 +3,10 @@
  */
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { applyFilters } from "../components/ResultsToolbar";
+import {
+  applyFilters,
+  isWebsiteGenerationEligible,
+} from "../components/ResultsToolbar";
 import { formatDistance, formatRadius } from "../lib/format";
 import type { ProspectSummary } from "../lib/types";
 
@@ -192,6 +195,18 @@ describe("prospects ignorés", () => {
       hideOptOut: false,
     });
     assert.deepEqual(ids(rows), ["a", "b"]);
+  });
+});
+
+describe("sélection pour la création de site", () => {
+  it("autorise les prospects exploitables mais jamais un refus de démarchage", () => {
+    assert.equal(isWebsiteGenerationEligible(prospect({ ignored: true })), true);
+    assert.equal(
+      isWebsiteGenerationEligible(
+        prospect({ optOut: "Refus de démarchage affiché sur le site" }),
+      ),
+      false,
+    );
   });
 });
 

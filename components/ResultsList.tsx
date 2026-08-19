@@ -27,6 +27,8 @@ export function ResultsList({
   onSelect,
   onOpen,
   autoScroll = false,
+  websiteSelection = new Set<string>(),
+  onToggleWebsiteSelection,
 }: {
   results: ProspectSummary[];
   selectedId: string | null;
@@ -38,6 +40,9 @@ export function ResultsList({
    * sur un survol de la liste ferait glisser la ligne sous le curseur.
    */
   autoScroll?: boolean;
+  /** Prospects préparés pour la création de leur vitrine. */
+  websiteSelection?: ReadonlySet<string>;
+  onToggleWebsiteSelection?: (id: string) => void;
 }) {
   const listRef = useRef<HTMLUListElement>(null);
 
@@ -65,7 +70,7 @@ export function ResultsList({
           <li
             key={prospect.id}
             data-prospect={prospect.id}
-            className="transition-colors"
+            className="flex items-stretch transition-colors"
             // Sélection = liseré indigo à gauche : on repère la ligne courante
             // sans que le fond se confonde avec le simple survol.
             style={
@@ -77,6 +82,17 @@ export function ResultsList({
                 : undefined
             }
           >
+            {onToggleWebsiteSelection && !prospect.optOut && (
+              <label className="flex w-11 shrink-0 cursor-pointer items-center justify-center border-r border-transparent px-2 hover:bg-app-hover">
+                <input
+                  type="checkbox"
+                  checked={websiteSelection.has(prospect.id)}
+                  onChange={() => onToggleWebsiteSelection(prospect.id)}
+                  aria-label={`Sélectionner ${prospect.name} pour créer un site`}
+                  className="h-4 w-4 cursor-pointer rounded border-app-border accent-app-accent"
+                />
+              </label>
+            )}
             {/* Toute la ligne est cliquable : un vrai bouton, focusable au clavier. */}
             <button
               type="button"
@@ -84,7 +100,7 @@ export function ResultsList({
               onMouseEnter={() => onSelect(prospect.id)}
               onFocus={() => onSelect(prospect.id)}
               aria-label={`Ouvrir la fiche de ${prospect.name}`}
-              className={`group flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left transition-colors ${
+              className={`group flex min-w-0 flex-1 cursor-pointer items-center gap-3 px-4 py-2.5 text-left transition-colors ${
                 selected ? "" : "hover:bg-app-hover"
               } ${prospect.ignored ? "opacity-55" : ""}`}
             >
