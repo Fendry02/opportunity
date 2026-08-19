@@ -149,6 +149,11 @@ body {
   outline-offset: 1px;
 }
 
+/* Prospect ignoré : pin gris et estompé, pour qu'il recule sur la carte. */
+.score-pin--dim {
+  opacity: 0.5;
+}
+
 /* Point de départ du balayage : discret, jamais confondu avec un prospect. */
 .search-center {
   width: 12px;

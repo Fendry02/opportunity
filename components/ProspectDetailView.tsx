@@ -21,9 +21,15 @@ import type { ContactStatus, ProspectDetail } from "@/lib/types";
 export function ProspectDetailView({
   initial,
   variant = "page",
+  onProspectUpdate,
 }: {
   initial: ProspectDetail;
   variant?: "page" | "panel";
+  /** Remonte un changement de suivi/ignoré vers la liste et la carte. */
+  onProspectUpdate?: (
+    id: string,
+    changes: { contactStatus: ContactStatus; ignored: boolean },
+  ) => void;
 }) {
   const [prospect, setProspect] = useState(initial);
   const [enriching, setEnriching] = useState(false);
@@ -66,6 +72,10 @@ export function ProspectDetailView({
         },
       );
       setProspect(data.prospect);
+      onProspectUpdate?.(data.prospect.id, {
+        contactStatus: data.prospect.contactStatus,
+        ignored: data.prospect.ignored,
+      });
     } catch (err) {
       setProspect((current) => ({ ...current, contactStatus: previous }));
       setError(
@@ -91,6 +101,10 @@ export function ProspectDetailView({
         },
       );
       setProspect(data.prospect);
+      onProspectUpdate?.(data.prospect.id, {
+        contactStatus: data.prospect.contactStatus,
+        ignored: data.prospect.ignored,
+      });
     } catch (err) {
       setProspect((current) => ({ ...current, ignored: previous }));
       setError(

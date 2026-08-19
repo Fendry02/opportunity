@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ProspectDetailView } from "./ProspectDetailView";
 import { ApiError, fetchJson } from "@/lib/fetch-json";
-import type { ProspectDetail } from "@/lib/types";
+import type { ContactStatus, ProspectDetail } from "@/lib/types";
 
 /**
  * Fiche ouverte au clic sur un pin de la carte.
@@ -17,9 +17,14 @@ import type { ProspectDetail } from "@/lib/types";
 export function ProspectPanel({
   prospectId,
   onClose,
+  onProspectUpdate,
 }: {
   prospectId: string;
   onClose: () => void;
+  onProspectUpdate?: (
+    id: string,
+    changes: { contactStatus: ContactStatus; ignored: boolean },
+  ) => void;
 }) {
   const [prospect, setProspect] = useState<ProspectDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -106,7 +111,11 @@ export function ProspectPanel({
             </button>
           </div>
         ) : prospect ? (
-          <ProspectDetailView initial={prospect} variant="panel" />
+          <ProspectDetailView
+            initial={prospect}
+            variant="panel"
+            onProspectUpdate={onProspectUpdate}
+          />
         ) : (
           <p className="text-app-muted">Chargement…</p>
         )}

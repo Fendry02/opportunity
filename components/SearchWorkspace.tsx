@@ -110,6 +110,16 @@ export function SearchWorkspace() {
     );
   }, []);
 
+  // Un changement de suivi/ignoré fait dans la fiche doit se voir tout de suite
+  // dans la liste et sur la carte, sans attendre un rafraîchissement.
+  const patchResult = useCallback(
+    (id: string, changes: Pick<ProspectSummary, "contactStatus" | "ignored">) =>
+      setResults((current) =>
+        current.map((r) => (r.id === id ? { ...r, ...changes } : r)),
+      ),
+    [],
+  );
+
   useEffect(() => {
     let cancelled = false;
     void (async () => {
@@ -327,6 +337,7 @@ export function SearchWorkspace() {
               key={openedId}
               prospectId={openedId}
               onClose={() => setOpenedId(null)}
+              onProspectUpdate={patchResult}
             />
           ) : search ? (
             <div className="flex h-full flex-col">

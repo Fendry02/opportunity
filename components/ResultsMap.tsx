@@ -44,7 +44,7 @@ function pinIcon(prospect: ProspectSummary, selected: boolean): L.DivIcon {
 
   return L.divIcon({
     className: "",
-    html: `<div class="score-pin${selected ? " score-pin--selected" : ""}" style="background:${color}">${label}</div>`,
+    html: `<div class="score-pin${selected ? " score-pin--selected" : ""}${prospect.ignored ? " score-pin--dim" : ""}" style="background:${color}">${label}</div>`,
     iconSize: [26, 26],
     iconAnchor: [13, 13],
   });
