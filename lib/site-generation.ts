@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { buildQuoteDraft } from "./outreach";
 import type { ProspectDetail } from "./types";
 
 /**
@@ -141,6 +142,14 @@ export function createWebsiteProject(
       "utf8",
     );
     fs.writeFileSync(
+      path.join(directory, "DEVIS.md"),
+      buildQuoteDraft({
+        businessName: prospect.name,
+        address: prospect.address,
+      }),
+      "utf8",
+    );
+    fs.writeFileSync(
       path.join(directory, "site.json"),
       JSON.stringify(
         {
@@ -150,6 +159,7 @@ export function createWebsiteProject(
           businessName: prospect.name,
           sourceWebsite: prospect.websiteUrl,
           prompt: "PROMPT.md",
+          quote: "DEVIS.md",
         },
         null,
         2,

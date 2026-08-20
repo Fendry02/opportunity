@@ -6,6 +6,7 @@ export type SearchStatus = "running" | "done" | "error";
 
 /** Cycle de vie d'une vitrine confiée à l'agent de code local. */
 export type WebsiteJobStatus = "pending" | "running" | "ready" | "failed";
+export type WebsiteDeploymentStatus = "pending" | "running" | "ready" | "failed";
 
 /** Vue sérialisable du job, partagée entre les routes et le panneau de suivi. */
 export type WebsiteJob = {
@@ -20,6 +21,30 @@ export type WebsiteJob = {
   createdAt: string;
   startedAt: string | null;
   finishedAt: string | null;
+  deploymentStatus: WebsiteDeploymentStatus;
+  deploymentUrl: string | null;
+  deploymentError: string | null;
+  deploymentAttempts: number;
+  deploymentStartedAt: string | null;
+  deploymentFinishedAt: string | null;
+  /** Brouillon créé dès que le site Vercel et l'adresse publique sont prêts. */
+  emailDraft: OutreachEmailDraft | null;
+  emailPreparedAt: string | null;
+};
+
+/** Canal choisi pour l'approche commerciale du prospect. */
+export type OutreachMethod = "visit" | "email";
+export type OutreachEmailSource = "manual" | "public_site";
+
+export type OutreachPlan = {
+  method: OutreachMethod;
+  recipientEmail: string | null;
+  recipientEmailSource: OutreachEmailSource | null;
+};
+
+export type OutreachEmailDraft = {
+  subject: string;
+  body: string;
 };
 
 /**
@@ -95,6 +120,7 @@ export type ProspectSummary = {
   optOut: string | null;
   /** Suivi de la prise de contact (défaut : à contacter). */
   contactStatus: ContactStatus;
+  outreachMethod: OutreachMethod;
   /** Ignoré manuellement : grisé et repoussé en bas de liste. */
   ignored: boolean;
   /** État du site, résumé pour la liste. */
@@ -177,7 +203,9 @@ export type ProspectDetail = {
   tier: ScoreTier | null;
   optOut: string | null;
   contactStatus: ContactStatus;
+  outreach: OutreachPlan;
   ignored: boolean;
+  websiteProject: WebsiteJob | null;
   breakdown: ScoreLine[];
   analysis: SiteAnalysisView | null;
   enrichment: EnrichmentView | null;

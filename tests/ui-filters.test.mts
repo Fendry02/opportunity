@@ -28,6 +28,7 @@ function prospect(over: Partial<ProspectSummary>): ProspectSummary {
     tier: null,
     optOut: null,
     contactStatus: "to_contact",
+    outreachMethod: "visit",
     ignored: false,
     siteState: "alive",
     flags: null,

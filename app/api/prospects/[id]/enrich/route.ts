@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { enrichProspect } from "@/lib/enrich";
 import { getProspect } from "@/lib/queries";
+import { syncOutreachEmailDraft } from "@/lib/website-jobs";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,9 @@ export async function POST(
       { status: 400 },
     );
   }
+
+  const project = getProspect(businessId)?.websiteProject;
+  if (project) syncOutreachEmailDraft(project.id);
 
   // On renvoie la fiche complète : le composant n'a qu'à remplacer son état.
   return NextResponse.json({ prospect: getProspect(businessId) });

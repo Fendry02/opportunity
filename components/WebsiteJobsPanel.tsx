@@ -39,6 +39,7 @@ export function WebsiteJobsPanel({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
   const [retryingId, setRetryingId] = useState<number | null>(null);
+  const [retryingDeploymentId, setRetryingDeploymentId] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,7 +52,15 @@ export function WebsiteJobsPanel({ onClose }: { onClose: () => void }) {
         setJobs(data.jobs);
         setError(null);
         setLoading(false);
-        if (data.jobs.some((job) => job.status === "pending" || job.status === "running")) {
+        if (
+          data.jobs.some(
+            (job) =>
+              job.status === "pending" ||
+              job.status === "running" ||
+              job.deploymentStatus === "pending" ||
+              job.deploymentStatus === "running",
+          )
+        ) {
           timer = setTimeout(() => void tick(), POLL_INTERVAL_MS);
         }
       } catch (err) {
@@ -81,8 +90,24 @@ export function WebsiteJobsPanel({ onClose }: { onClose: () => void }) {
     }
   };
 
+  const retryDeployment = async (jobId: number) => {
+    setRetryingDeploymentId(jobId);
+    try {
+      await fetchJson(`/api/websites/jobs/${jobId}/deploy/retry`, { method: "POST" });
+      setRefreshToken((token) => token + 1);
+    } catch (err) {
+      setError(describeError(err));
+    } finally {
+      setRetryingDeploymentId(null);
+    }
+  };
+
   const activeCount = jobs.filter(
-    (job) => job.status === "pending" || job.status === "running",
+    (job) =>
+      job.status === "pending" ||
+      job.status === "running" ||
+      job.deploymentStatus === "pending" ||
+      job.deploymentStatus === "running",
   ).length;
 
   return (
@@ -100,8 +125,8 @@ export function WebsiteJobsPanel({ onClose }: { onClose: () => void }) {
             )}
           </div>
           <p className="mt-1 text-[12.5px] text-app-muted text-pretty">
-            Chaque projet est finalisé localement à partir de son prompt, puis reste
-            disponible dans Programmes/websites.
+            Chaque projet est finalisé localement, puis publié sur Vercel dès que
+            le jeton de publication est configuré.
           </p>
         </div>
         <button
@@ -125,7 +150,9 @@ export function WebsiteJobsPanel({ onClose }: { onClose: () => void }) {
                 key={job.id}
                 job={job}
                 retrying={retryingId === job.id}
+                retryingDeployment={retryingDeploymentId === job.id}
                 onRetry={() => void retry(job.id)}
+                onRetryDeployment={() => void retryDeployment(job.id)}
               />
             ))}
           </div>
@@ -150,13 +177,18 @@ export function WebsiteJobsPanel({ onClose }: { onClose: () => void }) {
 function WebsiteJobCard({
   job,
   retrying,
+  retryingDeployment,
   onRetry,
+  onRetryDeployment,
 }: {
   job: WebsiteJob;
   retrying: boolean;
+  retryingDeployment: boolean;
   onRetry: () => void;
+  onRetryDeployment: () => void;
 }) {
   const status = STATUS[job.status];
+  const deployment = STATUS[job.deploymentStatus];
   const details = job.error ?? job.output;
 
   return (
@@ -184,6 +216,43 @@ function WebsiteJobCard({
         >
           {shorten(details)}
         </p>
+      )}
+
+      {job.status === "ready" && (
+        <div className="mt-2.5 rounded-app border border-app-border bg-app-hover px-2.5 py-2 text-[12px]">
+          <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+            <span className="text-app-muted">Publication Vercel</span>
+            <span className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${deployment.className}`}>
+              {deployment.label}
+            </span>
+          </div>
+          {job.deploymentUrl ? (
+            <a
+              href={job.deploymentUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-1.5 block truncate font-medium text-app-link hover:underline"
+              title={job.deploymentUrl}
+            >
+              {job.deploymentUrl}
+            </a>
+          ) : job.deploymentError ? (
+            <p className="mt-1.5 leading-5 text-app-ko" title={job.deploymentError}>
+              {shorten(job.deploymentError)}
+            </p>
+          ) : (
+            <p className="mt-1.5 leading-5 text-app-muted">
+              {job.deploymentStatus === "running"
+                ? "Publication en cours…"
+                : "Publication prête à démarrer…"}
+            </p>
+          )}
+          {job.emailDraft && (
+            <p className="mt-1.5 font-medium text-app-ok">
+              Brouillon d’e-mail prêt
+            </p>
+          )}
+        </div>
       )}
 
       <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-app-border pt-2.5">
@@ -214,6 +283,16 @@ function WebsiteJobCard({
             className="flex h-9 items-center rounded-app bg-app-accent px-2.5 text-[12px] font-semibold text-white transition-colors hover:bg-app-accent-hover active:scale-[0.96] disabled:cursor-wait disabled:opacity-60"
           >
             {retrying ? "Relance…" : "Relancer"}
+          </button>
+        )}
+        {job.status === "ready" && job.deploymentStatus === "failed" && (
+          <button
+            type="button"
+            onClick={onRetryDeployment}
+            disabled={retryingDeployment}
+            className="flex h-9 items-center rounded-app bg-app-accent px-2.5 text-[12px] font-semibold text-white transition-colors hover:bg-app-accent-hover active:scale-[0.96] disabled:cursor-wait disabled:opacity-60"
+          >
+            {retryingDeployment ? "Relance…" : "Relancer Vercel"}
           </button>
         )}
       </div>

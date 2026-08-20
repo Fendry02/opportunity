@@ -16,7 +16,7 @@ type DbGlobal = typeof globalThis & {
 };
 
 const g = globalThis as DbGlobal;
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 4;
 
 const DB_PATH =
   process.env.OPPORTUNITY_DB_PATH ??
@@ -179,7 +179,17 @@ function migrate(db: Database.Database): void {
       attempts    INTEGER NOT NULL DEFAULT 0,
       created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
       started_at  TEXT,
-      finished_at TEXT
+      finished_at TEXT,
+      deployment_status TEXT NOT NULL DEFAULT 'pending'
+                        CHECK (deployment_status IN ('pending', 'running', 'ready', 'failed')),
+      deployment_url TEXT,
+      deployment_error TEXT,
+      deployment_attempts INTEGER NOT NULL DEFAULT 0,
+      deployment_started_at TEXT,
+      deployment_finished_at TEXT,
+      email_draft_subject TEXT,
+      email_draft_body TEXT,
+      email_draft_prepared_at TEXT
     );
     CREATE INDEX IF NOT EXISTS idx_website_jobs_status
       ON website_jobs(status, id);
@@ -198,6 +208,24 @@ function migrate(db: Database.Database): void {
   addColumnIfMissing(db, "businesses", "contact_updated_at", "TEXT");
   // Ignoré manuellement : écarté de la vue à la main, indépendamment du score.
   addColumnIfMissing(db, "businesses", "ignored", "INTEGER NOT NULL DEFAULT 0");
+  // Canal commercial : une visite n'exige pas d'adresse, un email peut être
+  // préparé dès que son destinataire a été saisi.
+  addColumnIfMissing(db, "businesses", "outreach_method", "TEXT NOT NULL DEFAULT 'visit'");
+  addColumnIfMissing(db, "businesses", "outreach_email", "TEXT");
+  addColumnIfMissing(db, "businesses", "outreach_email_source", "TEXT");
+  addColumnIfMissing(db, "website_jobs", "deployment_status", "TEXT NOT NULL DEFAULT 'pending'");
+  addColumnIfMissing(db, "website_jobs", "deployment_url", "TEXT");
+  addColumnIfMissing(db, "website_jobs", "deployment_error", "TEXT");
+  addColumnIfMissing(db, "website_jobs", "deployment_attempts", "INTEGER NOT NULL DEFAULT 0");
+  addColumnIfMissing(db, "website_jobs", "deployment_started_at", "TEXT");
+  addColumnIfMissing(db, "website_jobs", "deployment_finished_at", "TEXT");
+  addColumnIfMissing(db, "website_jobs", "email_draft_subject", "TEXT");
+  addColumnIfMissing(db, "website_jobs", "email_draft_body", "TEXT");
+  addColumnIfMissing(db, "website_jobs", "email_draft_prepared_at", "TEXT");
+  db.exec(
+    `CREATE INDEX IF NOT EXISTS idx_website_jobs_deployment_status
+       ON website_jobs(deployment_status, id)`,
+  );
 }
 
 function addColumnIfMissing(
@@ -227,6 +255,13 @@ function recoverInterruptedSearches(db: Database.Database): void {
         SET status = 'error',
             error  = 'Recherche interrompue par un redémarrage du serveur'
       WHERE status = 'running'`,
+  ).run();
+  db.prepare(
+    `UPDATE website_jobs
+        SET deployment_status = 'failed',
+            deployment_error = 'Publication interrompue par un redémarrage du serveur',
+            deployment_finished_at = datetime('now')
+      WHERE deployment_status = 'running'`,
   ).run();
 }
 

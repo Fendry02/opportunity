@@ -1,10 +1,12 @@
 import { extractColors } from "../analyzer/colors";
 import { fetchPage, isDead } from "../analyzer/fetch-site";
 import { getDb } from "../db";
+import { setDiscoveredOutreachEmail } from "../outreach";
 import { getProspect, getRawSignals } from "../queries";
 import type { EnrichmentView } from "../types";
 import { lookupCompany } from "./gouv";
 import { findLegalNotice } from "./mentions-legales";
+import { findPublicEmail } from "./public-email";
 import { deduceServices } from "./services";
 
 /**
@@ -22,12 +24,17 @@ export async function enrichProspect(businessId: string): Promise<EnrichmentView
   const raw = getRawSignals(businessId);
   const siteUrl = prospect.analysis?.reachable ? prospect.websiteUrl : null;
 
-  // 1. Mentions légales (dirigeant + SIRET faisant foi).
-  const legal = siteUrl
-    ? await findLegalNotice(siteUrl, await homepageHtml(siteUrl))
-    : null;
+  const homepage = siteUrl ? await homepageHtml(siteUrl) : undefined;
 
-  // 2. API gouv, contrainte par le code postal extrait de l'adresse Google.
+  // 1. Mentions légales (dirigeant + SIRET faisant foi).
+  const legal = siteUrl ? await findLegalNotice(siteUrl, homepage) : null;
+
+  // 2. Adresse de contact publiée sur le site. Elle est conservée séparément
+  // des données de l'entreprise et ne remplace jamais une saisie manuelle.
+  const publicEmail = siteUrl ? await findPublicEmail(siteUrl, homepage) : null;
+  if (publicEmail) setDiscoveredOutreachEmail(businessId, publicEmail);
+
+  // 3. API gouv, contrainte par le code postal extrait de l'adresse Google.
   const postcode = extractPostcode(prospect.address);
   const company = await lookupCompany({
     name: prospect.name,
@@ -35,7 +42,7 @@ export async function enrichProspect(businessId: string): Promise<EnrichmentView
     siretHint: legal?.siret ?? null,
   }).catch(() => null);
 
-  // 3. Palette du site actuel.
+  // 4. Palette du site actuel.
   const colors = siteUrl
     ? await extractColors({
         inlineColors: raw?.inlineColors ?? [],
@@ -43,7 +50,7 @@ export async function enrichProspect(businessId: string): Promise<EnrichmentView
       })
     : [];
 
-  // 4. Prestations déduites des textes déjà collectés (aucun fetch de plus).
+  // 5. Prestations déduites des textes déjà collectés (aucun fetch de plus).
   const services = deduceServices({
     navLabels: raw?.navLabels ?? [],
     headings: raw?.headings ?? [],

@@ -54,6 +54,9 @@ d'un cache SQLite local qui vous appartient.
   précédée de son enrichissement, dans le dossier local `Programmes/websites`.
 - Suivre la prise de contact prospect par prospect — à contacter, contacté, pas
   intéressé, client — un statut qui suit l'entreprise d'un balayage à l'autre.
+- Choisir une visite sur place ou un e-mail pour chaque prospect. L'adresse de
+  contact publique est recherchée, puis le brouillon est préparé avec le lien
+  du site publié et un devis de travail.
 - Travailler en thème clair ou sombre, au choix ou selon le réglage du système.
 - Mettre en cache géocodage, Places, récupérations de sites et enrichissement
   dans SQLite : une recherche relancée ne consomme jamais deux fois du quota.
@@ -163,6 +166,8 @@ Chaque projet arrive dans `Programmes/websites/<nom-du-prospect>/` avec :
   carte et lien d'itinéraire Google Maps ;
 - `PROMPT.md`, le brief lu par Claude Code pour poursuivre le travail dans ce
   seul dossier ;
+- `DEVIS.md`, un brouillon de devis à 1 000 € HT, à compléter avec vos mentions
+  légales et vos conditions de vente avant envoi ;
 - `site.json`, la trace de la génération et de la fiche source.
 
 Le bouton **Sites** du bandeau ouvre le suivi : attente, exécution, site prêt ou
@@ -181,6 +186,27 @@ Les répertoires existants ne sont jamais remplacés. Relancer une création pou
 le même nom le signale comme ignorée, ce qui évite d'écraser une retouche en
 cours. Définissez `OPPORTUNITY_WEBSITES_DIR` si les vitrines doivent vivre sur
 un autre volume.
+
+## Préparer la prise de contact
+
+La fiche d'un prospect contient un choix de canal : **Visite sur place** ou
+**E-mail**. Dans le premier cas, le devis sert de support de rendez-vous. Dans
+le second, Opportunity enrichit le prospect et cherche une adresse affichée sur
+son site public, en priorité sur les pages de contact et de mentions légales.
+L'adresse trouvée est indiquée dans la fiche ; une adresse saisie manuellement
+reste toujours prioritaire. Si aucune adresse publique n'est disponible, vous
+pouvez simplement la renseigner vous-même.
+
+La même recherche est lancée avant chaque génération de site, y compris pour
+une sélection de prospects. Dès que Vercel a publié le site, Opportunity prépare
+et conserve automatiquement le sujet et le texte avec l'URL de production et le
+devis. Il ne crée pas de message dans votre boîte mail et n'envoie rien lui-même.
+
+La publication démarre après la génération locale. Renseignez `VERCEL_TOKEN`
+dans `.env.local`, puis, si besoin, `VERCEL_SCOPE` pour une équipe Vercel. Sans
+jeton, le site reste prêt localement et le panneau **Sites** affiche l'erreur ;
+après avoir ajouté le jeton, cliquez sur **Relancer Vercel**. Cette relance ne
+demande pas une nouvelle génération.
 
 <p align="center">
   <img src="public/screenshots/02-diagnostic.png" alt="Fiche prospect : identité, puis le diagnostic chiffré avec un argument commercial par défaut" width="620">
@@ -241,9 +267,10 @@ vous y fier.
 ## Éthique
 
 Opportunity regarde des **entreprises, pas des personnes**, et uniquement ce que
-ces entreprises publient elles-mêmes. Aucune donnée personnelle dans le
-pipeline, aucune collecte d'e-mails, aucun scraping au-delà de pages publiques
-qu'un navigateur récupérerait de toute façon.
+ces entreprises publient elles-mêmes. Le pipeline ne recherche que les adresses
+de contact déjà affichées par l'entreprise sur son propre site, sans source
+authentifiée ni collecte d'adresses privées. Aucun scraping ne va au-delà de
+pages publiques qu'un navigateur récupérerait de toute façon.
 
 Deux règles sont structurantes :
 
@@ -385,7 +412,7 @@ Les frontières qui gardent le projet peu coûteux et testable :
 | `api-adresse.data.gouv.fr` | Géocodage français (BAN) | 365 jours |
 | Google Places Text Search | Entreprises locales par secteur | 7 jours |
 | Google Places Details | Site web, téléphone, note, horaires | 30 jours |
-| Sites des prospects | Signaux techniques et de contenu | 7 jours |
+| Sites des prospects | Signaux techniques, contenu et adresse de contact affichée | 7 jours |
 | `recherche-entreprises.api.gouv.fr` | Enrichissement entreprise (SIREN, dirigeants) | 90 jours |
 | `basemaps.cartocdn.com` | Tuiles du fond de carte | — (chargé par le navigateur) |
 

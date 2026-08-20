@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { setContactStatus } from "@/lib/contact";
 import { setIgnored } from "@/lib/ignore";
+import { getOutreachPlan, setOutreachPlan } from "@/lib/outreach";
 import { getProspect } from "@/lib/queries";
+import { getLatestWebsiteJobForBusiness, syncOutreachEmailDraft } from "@/lib/website-jobs";
 
 export const dynamic = "force-dynamic";
 
@@ -24,10 +26,17 @@ const PatchSchema = z
       .enum(["to_contact", "contacted", "not_interested", "client"])
       .optional(),
     ignored: z.boolean().optional(),
+    outreachMethod: z.enum(["visit", "email"]).optional(),
+    outreachEmail: z.string().trim().email().max(254).nullable().optional(),
   })
-  .refine((data) => data.contactStatus !== undefined || data.ignored !== undefined, {
-    message: "Rien à mettre à jour",
-  });
+  .refine(
+    (data) =>
+      data.contactStatus !== undefined ||
+      data.ignored !== undefined ||
+      data.outreachMethod !== undefined ||
+      data.outreachEmail !== undefined,
+    { message: "Rien à mettre à jour" },
+  );
 
 /** Met à jour le suivi de contact et/ou l'état « ignoré » du prospect. */
 export async function PATCH(
@@ -50,6 +59,24 @@ export async function PATCH(
   }
   if (parsed.data.ignored !== undefined) {
     setIgnored(businessId, parsed.data.ignored);
+  }
+  if (
+    parsed.data.outreachMethod !== undefined ||
+    parsed.data.outreachEmail !== undefined
+  ) {
+    const current = getOutreachPlan(businessId);
+    if (!current) {
+      return NextResponse.json({ error: "Prospect introuvable" }, { status: 404 });
+    }
+    setOutreachPlan(businessId, {
+      method: parsed.data.outreachMethod ?? current.method,
+      recipientEmail:
+        parsed.data.outreachEmail === undefined
+          ? current.recipientEmail
+          : parsed.data.outreachEmail,
+    });
+    const project = getLatestWebsiteJobForBusiness(businessId);
+    if (project) syncOutreachEmailDraft(project.id);
   }
 
   const prospect = getProspect(businessId);

@@ -186,7 +186,9 @@ describe("brief markdown", () => {
     tier: "high",
     optOut: null,
     contactStatus: "to_contact",
+    outreach: { method: "visit", recipientEmail: null, recipientEmailSource: null },
     ignored: false,
+    websiteProject: null,
     breakdown: [
       {
         key: "base.noSite",

@@ -40,7 +40,9 @@ function prospect(over: Partial<ProspectDetail> = {}): ProspectDetail {
     tier: "high",
     optOut: null,
     contactStatus: "to_contact",
+    outreach: { method: "visit", recipientEmail: null, recipientEmailSource: null },
     ignored: false,
+    websiteProject: null,
     breakdown: [],
     analysis: null,
     enrichment: {
@@ -102,6 +104,7 @@ describe("génération d'un site prospect", () => {
     assert.equal(second.status, "skipped");
     assert.ok(fs.existsSync(path.join(first.directory, "index.html")));
     assert.ok(fs.existsSync(path.join(first.directory, "PROMPT.md")));
+    assert.ok(fs.existsSync(path.join(first.directory, "DEVIS.md")));
     assert.ok(fs.existsSync(path.join(first.directory, "site.json")));
   });
 });

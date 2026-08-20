@@ -3,8 +3,10 @@ import { normalizeContactStatus } from "./contact";
 import { bool, getDb } from "./db";
 import { optOutLabel } from "./opt-out";
 import { type ScoreLine, scoreTier } from "./scoring";
+import { getLatestWebsiteJobForBusiness } from "./website-jobs";
 import type {
   EnrichmentView,
+  OutreachMethod,
   ProspectDetail,
   ProspectSummary,
   SearchProgress,
@@ -117,13 +119,15 @@ type ResultRow = {
   opt_out_marker: string | null;
   opt_out_source: string | null;
   contact_status: string | null;
+  outreach_method: string | null;
   ignored: number;
 };
 
 const RESULTS_SQL = `
   SELECT b.id, b.name, b.sector, b.lat, b.lng, b.address, b.phone, b.website_url,
          b.rating, b.review_count, b.details_fetched_at,
-         b.opt_out_marker, b.opt_out_source, b.contact_status, b.ignored,
+         b.opt_out_marker, b.opt_out_source, b.contact_status,
+         b.outreach_method, b.ignored,
          r.distance_m,
          sc.total,
          a.reachable, a.has_viewport, a.https, a.has_title, a.has_meta_desc,
@@ -174,6 +178,7 @@ function toSummary(row: ResultRow): ProspectSummary {
     tier: row.total === null ? null : scoreTier(row.total),
     optOut: optOutLabelOf(row),
     contactStatus: normalizeContactStatus(row.contact_status),
+    outreachMethod: normalizeOutreachMethod(row.outreach_method),
     ignored: bool(row.ignored),
     siteState: siteState(row),
     flags: analysed
@@ -216,8 +221,15 @@ type BusinessRow = {
   opt_out_marker: string | null;
   opt_out_source: string | null;
   contact_status: string | null;
+  outreach_method: string | null;
+  outreach_email: string | null;
+  outreach_email_source: string | null;
   ignored: number;
 };
+
+function normalizeOutreachMethod(value: string | null): OutreachMethod {
+  return value === "email" ? "email" : "visit";
+}
 
 type AnalysisRow = {
   url: string | null;
@@ -379,7 +391,17 @@ export function getProspect(id: string): ProspectDetail | null {
     tier: score ? scoreTier(score.total) : null,
     optOut: optOutLabelOf(business),
     contactStatus: normalizeContactStatus(business.contact_status),
+    outreach: {
+      method: normalizeOutreachMethod(business.outreach_method),
+      recipientEmail: business.outreach_email,
+      recipientEmailSource:
+        business.outreach_email_source === "public_site" ||
+        business.outreach_email_source === "manual"
+          ? business.outreach_email_source
+          : null,
+    },
     ignored: bool(business.ignored),
+    websiteProject: getLatestWebsiteJobForBusiness(business.id),
     breakdown: parseJson<ScoreLine[]>(score?.breakdown_json, []),
     analysis: analysis ? toAnalysisView(analysis) : null,
     enrichment: enrichment ? toEnrichmentView(enrichment) : null,
