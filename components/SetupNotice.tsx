@@ -35,9 +35,10 @@ export function SetupNotice({
   if (quota.mock && firstRun) {
     return (
       <div className="shrink-0 border-b border-app-border bg-app-surface px-5 py-2 text-[12.5px] text-app-muted">
-        <span className="font-medium text-app-text">Mode démo.</span> Aucun appel
-        réseau : seule « Tours » dispose de données. Pour balayer vos vraies
-        zones, ajoutez une clé Google Places dans <Code>.env.local</Code>, puis{" "}
+        <span className="font-medium text-app-text">Mode démo.</span> Les données
+        du balayage viennent des fixtures ; seule « Tours » est disponible.
+        Pour balayer vos vraies zones, ajoutez une clé Google Places dans{" "}
+        <Code>.env.local</Code>, puis{" "}
         <Code>MOCK_EXTERNAL=0</Code>.
       </div>
     );

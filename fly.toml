@@ -1,8 +1,8 @@
 # Modèle de déploiement Fly.io pour une instance personnelle d'Opportunity.
 #
-# Au premier déploiement : `fly launch --copy-config` reprend ce fichier et vous
+# Au premier déploiement : `fly launch --copy-config --no-deploy` reprend ce fichier et vous
 # fait choisir un nom d'app unique et une région. Puis posez vos secrets :
-#   fly secrets set GOOGLE_PLACES_API_KEY=... APP_PASSWORD=...
+#   fly secrets set APP_PASSWORD=...
 # Créez le volume une fois :
 #   fly volumes create opportunity_data --size 1 --region cdg
 # Voir le README, section « Déployez votre instance ».
@@ -13,7 +13,7 @@ primary_region = "cdg"
 [build]
 
 [env]
-  MOCK_EXTERNAL = "0"
+  MOCK_EXTERNAL = "1"
   OPPORTUNITY_DB_PATH = "/data/opportunity.db"
 
 [http_service]

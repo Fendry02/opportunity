@@ -177,6 +177,11 @@ export function SearchWorkspace() {
   const generateWebsites = useCallback(async () => {
     const prospectIds = [...websiteSelection];
     if (prospectIds.length === 0) return;
+    if (
+      !window.confirm(
+        `Créer ${prospectIds.length} vitrine${prospectIds.length > 1 ? "s" : ""} ? Claude Code sera lancé pour les finaliser et peut engendrer des frais. Si Vercel est configuré, les sites terminés seront publiés automatiquement.`,
+      )
+    ) return;
 
     setGeneratingWebsites(true);
     setWebsiteGenerationMessage(
@@ -207,7 +212,7 @@ export function SearchWorkspace() {
       if (data.summary.skipped) parts.push(`${data.summary.skipped} ignoré${data.summary.skipped > 1 ? "s" : ""}`);
       if (data.summary.failed) parts.push(`${data.summary.failed} en erreur`);
       setWebsiteGenerationMessage(
-        `${parts.join(" · ")} dans Programmes/websites.`,
+        `${parts.join(" · ")} dans le dossier des vitrines.`,
       );
       setWebsiteSelection(new Set());
       if (data.summary.queued > 0) setWebsiteJobsOpen(true);

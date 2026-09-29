@@ -17,16 +17,17 @@ request en anglais reste évidemment la bienvenue.
 Nécessite Node 22 ou plus récent.
 
 ```bash
-npm install
+npm ci
 cp .env.local.example .env.local
 npm run dev
 ```
 
-`.env.local.example` est livré avec `MOCK_EXTERNAL=1`. Dans ce mode,
-l'application lit `fixtures/` et ne fait **aucun appel réseau externe** : vous
-pouvez développer et tester tout le produit sans clé Google Places et sans
-dépenser un centime. C'est le mode dans lequel tourne le CI, et il devrait
-suffire à la grande majorité des contributions.
+`.env.local.example` est livré avec `MOCK_EXTERNAL=1`. Dans ce mode, les sources
+de données du balayage lisent `fixtures/` : vous pouvez développer la recherche,
+le score et les briefs sans clé Google Places. Le fond de carte reste chargé par
+le navigateur depuis CARTO. La finalisation de vitrines par Claude Code et leur
+publication sur Vercel sont des fonctions distinctes : ne les lancez pas pour
+tester le parcours de démo. Le CI utilise les fixtures.
 
 ## Avant d'ouvrir une pull request
 
@@ -55,10 +56,10 @@ reviendra.
 
 - **`lib/` n'importe jamais React.** C'est du TypeScript simple, appelable
   depuis des scripts et des tests sans moteur de rendu.
-- **`cachedFetch()` dans `lib/cache.ts` est le seul endroit qui effectue une
-  requête externe.** Tout appel réseau passe par là : c'est ce qui fait de
-  `MOCK_EXTERNAL=1` un mode hors-ligne complet et ce qui rend le cache
-  universel. Si vous vous surprenez à écrire `fetch()` ailleurs, c'est le bug.
+- **Les sources de données du balayage passent par `cachedFetch()` dans
+  `lib/cache.ts`.** C'est ce qui permet à `MOCK_EXTERNAL=1` de remplacer ces
+  appels par les fixtures. Les tuiles CARTO côté navigateur, l'agent Claude Code
+  et le CLI Vercel sont hors de ce cache.
 - **Les routes d'API valident leur entrée (zod) et délèguent à `lib/`.** Aucune
   logique métier dans les handlers de route.
 - **Les composants ne parlent qu'aux routes d'API locales**, jamais à des API
