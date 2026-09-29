@@ -9,7 +9,7 @@ import type { ProspectDetail } from "./types";
  * un volume monté en production, sans changer le code.
  */
 export const DEFAULT_WEBSITES_DIR =
-  process.env.OPPORTUNITY_WEBSITES_DIR ??
+  process.env.OPPORTUNITY_WEBSITES_DIR?.trim() ||
   path.resolve(process.cwd(), "..", "websites");
 
 export type WebsiteProjectResult = {

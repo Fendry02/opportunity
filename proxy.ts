@@ -8,7 +8,7 @@ import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth-gate";
  * instance qu'on assume ouverte, aucune gêne. Sinon, toute requête hors page de
  * connexion et assets internes exige un cookie de session valide.
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const password = process.env.APP_PASSWORD;
   if (!password) return NextResponse.next();
 

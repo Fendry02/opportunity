@@ -19,7 +19,7 @@ const g = globalThis as DbGlobal;
 const SCHEMA_VERSION = 4;
 
 const DB_PATH =
-  process.env.OPPORTUNITY_DB_PATH ??
+  process.env.OPPORTUNITY_DB_PATH?.trim() ||
   path.join(process.cwd(), "data", "opportunity.db");
 
 function open(): Database.Database {

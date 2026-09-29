@@ -1,5 +1,6 @@
 # Garder l'image légère et ne jamais y embarquer de secrets ni la base locale.
 .git
+.context
 node_modules
 .next
 data

@@ -31,6 +31,8 @@ ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 # La base SQLite vit sur le volume persistant monté par Fly.
 ENV OPPORTUNITY_DB_PATH=/data/opportunity.db
+# Les vitrines générées doivent survivre aux redéploiements comme la base.
+ENV OPPORTUNITY_WEBSITES_DIR=/data/websites
 
 RUN useradd --uid 1001 --create-home app \
   && mkdir -p /data \

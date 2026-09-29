@@ -46,5 +46,6 @@ next-env.d.ts
 /data
 
 # plans et artefacts locaux de l'éditeur
+/.context/
 /nimbalyst-local
 /.nimbalyst

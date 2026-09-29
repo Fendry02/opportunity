@@ -20,9 +20,10 @@ Opportunity plisse les yeux à votre place. Il balaie un rayon, confronte la
 présence web de chaque entreprise à une liste fixe de défauts, les classe de 0 à
 100, et rédige un brief Markdown lisible dans la voiture avant le rendez-vous.
 
-Tout tourne sur votre machine. Pas de compte, pas de backend hébergé, pas de
-LLM. Le diagnostic vient d'heuristiques déterministes, de données publiques et
-d'un cache SQLite local qui vous appartient.
+La recherche et le diagnostic tournent sur votre machine, sans compte ni LLM :
+ils utilisent des heuristiques déterministes, des données publiques et un cache
+SQLite local. La création assistée de vitrines est une fonction distincte qui
+utilise Claude Code et peut publier sur Vercel si vous l'activez.
 
 > [!IMPORTANT]
 > **Opportunity est centré sur la France.** Le géocodage passe par l'API BAN de
@@ -51,7 +52,7 @@ d'un cache SQLite local qui vous appartient.
 - Exporter tout un balayage d'un coup : un seul Markdown réunit les briefs de
   tous les prospects notés, triés par score.
 - Cocher jusqu'à 12 prospects et générer pour chacun une première vitrine,
-  précédée de son enrichissement, dans le dossier local `Programmes/websites`.
+  précédée de son enrichissement, dans le dossier `../websites` par défaut.
 - Suivre la prise de contact prospect par prospect — à contacter, contacté, pas
   intéressé, client — un statut qui suit l'entreprise d'un balayage à l'autre.
 - Choisir une visite sur place ou un e-mail pour chaque prospect. L'adresse de
@@ -59,7 +60,8 @@ d'un cache SQLite local qui vous appartient.
   du site publié et un devis de travail.
 - Travailler en thème clair ou sombre, au choix ou selon le réglage du système.
 - Mettre en cache géocodage, Places, récupérations de sites et enrichissement
-  dans SQLite : une recherche relancée ne consomme jamais deux fois du quota.
+  dans SQLite : une recherche relancée pendant la durée du cache évite les
+  mêmes appels facturables.
 - **Respecter les refus de démarchage** du type `pas de démarchage pour un site`
   avant de noter ou de briefer une entreprise.
 
@@ -67,24 +69,35 @@ d'un cache SQLite local qui vous appartient.
 
 ## Démarrage rapide
 
+Installez Node.js 22 ou plus récent, puis :
+
 ```bash
-npm install
+git clone https://github.com/Fendry02/opportunity.git
+cd opportunity
+npm ci
 cp .env.local.example .env.local
 npm run dev
 ```
 
 Ouvrez <http://localhost:3000> et cliquez sur **Lancer le balayage**.
 
-`.env.local.example` positionne `MOCK_EXTERNAL=1`. Dans ce mode, l'application
-lit [`fixtures/`](fixtures/) et **ne fait aucun appel sortant côté serveur** —
-vous obtenez une démo complète sur Tours, avec dix entreprises fictives, sans
-clé Google et sans dépenser un centime. Tout ce qui suit à propos de Google
-Places ne compte qu'une fois ce drapeau désactivé.
+`.env.local.example` positionne `MOCK_EXTERNAL=1`. Dans ce mode, la recherche,
+l'analyse et l'enrichissement lisent [`fixtures/`](fixtures/) : vous pouvez
+essayer le balayage de Tours, la carte, les scores et les briefs avec des
+entreprises fictives, sans clé Google ni quota facturé. Saisissez **Tours** :
+les fixtures ne couvrent pas les autres villes.
 
-Seule exception, et elle est côté navigateur : les tuiles du fond de carte sont
-chargées depuis CARTO. Elles ne passent pas par `cachedFetch()` et ne sont donc
-pas coupées par le mode mock. C'est gratuit et sans clé, mais ce n'est pas hors
-ligne.
+Le fond de carte est chargé par le navigateur depuis CARTO, même en mode mock.
+La finalisation par Claude Code et la publication Vercel, si vous les lancez,
+sont également indépendantes de `MOCK_EXTERNAL`. Le mode mock simule les sources
+de données du balayage ; il ne rend pas toute l'application hors ligne.
+
+| Usage | À fournir | Résultat |
+| --- | --- | --- |
+| Démo locale | Node 22+, aucune clé | Balayage de Tours, diagnostic et briefs |
+| Vraies recherches | Clé Google Places et `MOCK_EXTERNAL=0` | Balayages en France avec quota Google |
+| Vitrines assistées | Claude Code installé et connecté | Prototype local puis finalisation par agent |
+| Publication | `VERCEL_TOKEN` et CLI Vercel accessible | Déploiement de la vitrine finalisée |
 
 ## Le résultat
 
@@ -155,11 +168,14 @@ survit pas au contact d'un dirigeant.
 ## Préparer des sites par lot
 
 Dans la liste des résultats, cochez les établissements à traiter, puis cliquez
-sur **Créer N sites**. L'application enrichit chaque fiche avant de préparer sa
-vitrine, puis la place dans une file locale. Un refus de démarchage n'affiche
-pas de case et ne peut pas entrer dans le lot.
+sur **Créer N sites**. Une confirmation rappelle le lancement de Claude Code et
+la publication automatique si Vercel est configuré. L'application enrichit
+ensuite chaque fiche avant de préparer sa vitrine, puis la place dans une file
+locale. Un refus de démarchage n'affiche pas de case et ne peut pas entrer dans
+le lot.
 
-Chaque projet arrive dans `Programmes/websites/<nom-du-prospect>/` avec :
+Chaque projet arrive dans `../websites/<nom-du-prospect>/` (ou dans le dossier
+défini par `OPPORTUNITY_WEBSITES_DIR`) avec :
 
 - `index.html`, une vitrine statique déjà ouvrable, adaptée au mobile, avec
   appels à l'action, animations discrètes, note et volume d'avis Google, puis
@@ -177,10 +193,12 @@ dossier de chaque vitrine, avec les outils `Read`, `Edit`, `Write`, `Glob` et
 `Grep`, sans shell ni publication.
 
 Par défaut, Opportunity cherche la commande `claude` et plafonne son budget à
-3 USD par vitrine. Installez et connectez Claude Code avant de créer un lot, ou
-modifiez `OPPORTUNITY_WEBSITE_AGENT_COMMAND` et
+3 USD par vitrine. **Créer des sites lance cet agent et peut donc engendrer des
+frais.** Installez et connectez Claude Code avant de créer un lot, ou modifiez
+`OPPORTUNITY_WEBSITE_AGENT_COMMAND` et
 `OPPORTUNITY_WEBSITE_AGENT_MAX_BUDGET_USD` dans `.env.local`. Si la commande
-manque, le job passe en erreur avec le diagnostic et reste relançable.
+manque, le prototype `index.html` est quand même créé, mais le job passe en
+erreur avec le diagnostic et reste relançable.
 
 Les répertoires existants ne sont jamais remplacés. Relancer une création pour
 le même nom le signale comme ignorée, ce qui évite d'écraser une retouche en
@@ -203,10 +221,11 @@ et conserve automatiquement le sujet et le texte avec l'URL de production et le
 devis. Il ne crée pas de message dans votre boîte mail et n'envoie rien lui-même.
 
 La publication démarre après la génération locale. Renseignez `VERCEL_TOKEN`
-dans `.env.local`, puis, si besoin, `VERCEL_SCOPE` pour une équipe Vercel. Sans
-jeton, le site reste prêt localement et le panneau **Sites** affiche l'erreur ;
-après avoir ajouté le jeton, cliquez sur **Relancer Vercel**. Cette relance ne
-demande pas une nouvelle génération.
+dans `.env.local`, puis, si besoin, `VERCEL_SCOPE` pour une équipe Vercel. Le
+programme `npx` doit être disponible et peut télécharger le CLI Vercel lors de
+la première publication. Sans jeton, le site reste prêt localement et le panneau
+**Sites** affiche l'erreur ; après avoir ajouté le jeton, cliquez sur
+**Relancer Vercel**. Cette relance ne demande pas une nouvelle génération.
 
 <p align="center">
   <img src="public/screenshots/02-diagnostic.png" alt="Fiche prospect : identité, puis le diagnostic chiffré avec un argument commercial par défaut" width="620">
@@ -234,35 +253,25 @@ score.
 
 ## Ce que ça coûte à l'usage
 
-Rien en mode mock. Avec `MOCK_EXTERNAL=0`, Opportunity sollicite deux SKU Google
-facturés, déterminés par ses masques de champs figés dans
-[`lib/places/client.ts`](lib/places/client.ts) :
+Rien en mode mock pour les sources du balayage. Avec `MOCK_EXTERNAL=0`,
+Opportunity effectue des appels Google Places facturables. Les SKU dépendent
+des masques de champs de [`lib/places/client.ts`](lib/places/client.ts) :
+Text Search utilise des champs Pro ; Place Details demande notamment `rating`,
+`userRatingCount` et `regularOpeningHours`, qui relèvent d'Enterprise.
+Consultez la [tarification Google Maps Platform](https://developers.google.com/maps/billing-and-pricing/pricing)
+et les quotas de votre projet avant d'activer les recherches réelles.
+Pour estimer un balayage, comptez les appels Text Search par secteur et les
+appels Place Details par établissement retenu ; le cache évite les appels
+répétés jusqu'à l'expiration des données.
 
-| Appel | SKU | Prix (0–100k/mois) | Gratuit chaque mois |
-| --- | --- | ---: | ---: |
-| Recherche par secteur | Text Search **Pro** | 32,00 $ / 1 000 | 5 000 |
-| Détail d'un prospect | Place Details **Enterprise** | 20,00 $ / 1 000 | 1 000 |
-
-Les détails tombent en Enterprise parce que le masque demande `rating`,
-`userRatingCount` et `regularOpeningHours` — les signaux dont le score a besoin.
-La recherche reste délibérément en Pro : aucun champ Enterprise n'est jamais
-autorisé dans le masque de recherche.
-
-**Un balayage qui retient 100 prospects coûte environ 2,50 $** — une centaine
-d'appels Details plus une douzaine d'appels Text Search. L'enveloppe gratuite
-mensuelle couvre environ **1 000 prospects avant la moindre facturation**.
-
-Trois garde-fous maintiennent ce niveau :
+Trois garde-fous limitent la consommation :
 
 - des valeurs `X-Goog-FieldMask` strictes — les modifier modifie votre facture ;
 - un plafond quotidien local via `PLACES_DAILY_CAP` (300 par défaut) ;
 - le cache SQLite, qui rend gratuite une recherche relancée.
 
-Les prix sont les tarifs publics de Google en dollars, vérifiés le 7 août 2026
-sur la [page de tarification Google Maps
-Platform](https://developers.google.com/maps/billing-and-pricing/pricing) ; les
-comptes européens sont facturés en euros au taux de Google. Vérifiez avant de
-vous y fier.
+La finalisation par Claude Code et la publication Vercel ont leurs propres
+conditions et coûts éventuels ; `PLACES_DAILY_CAP` ne les limite pas.
 
 ## Éthique
 
@@ -277,7 +286,7 @@ Deux règles sont structurantes :
 - **Le refus de démarchage est respecté.** Une fiche qui signale ne pas vouloir
   être démarchée à propos d'un site — dans son nom ou sur son site — est exclue
   du score et de la génération de brief ([`lib/opt-out.ts`](lib/opt-out.ts)).
-  C'est visible dans la démo : deux des douze entreprises sont barrées.
+  C'est visible dans la démo : deux entreprises sont barrées.
 - **Un brief est fait pour être lu par un humain.** La sortie est un document
   que vous relisez avant de décider de contacter quelqu'un. En faire une machine
   à e-mailing automatique est un [hors périmètre](#hors-périmètre) explicite.
@@ -316,22 +325,27 @@ Le dépôt fournit tout le nécessaire : `Dockerfile`, `.dockerignore` et un
 ### Sur Fly.io
 
 ```bash
-fly launch --copy-config          # reprend fly.toml, choisit un nom d'app + une région
-fly volumes create opportunity_data --size 1 --region cdg   # base SQLite persistante
-fly secrets set \
-  GOOGLE_PLACES_API_KEY=votre_cle_google \
-  APP_PASSWORD=un_mot_de_passe_solide
+fly launch --copy-config --no-deploy   # choisissez un nom d'app unique et une région
+fly volumes create opportunity_data --size 1 --region cdg  # adaptez la région
+fly secrets set APP_PASSWORD=un_mot_de_passe_solide
 fly deploy
 ```
 
+- `fly.toml` démarre en mode démo (`MOCK_EXTERNAL=1`). Pour les vraies recherches,
+  ajoutez `GOOGLE_PLACES_API_KEY` avec `fly secrets set`, passez
+  `MOCK_EXTERNAL` à `0` dans `fly.toml`, puis redéployez.
 - **`APP_PASSWORD`** protège l'instance : sans lui, quiconque connaît l'URL
   pourrait lancer des balayages sur *votre* clé Google. Défini → une page de
   connexion apparaît ; absent → l'instance est ouverte (pratique en local).
 - **`GOOGLE_PLACES_API_KEY`** : votre clé (voir § Configuration Google Places).
-  Gardez `MOCK_EXTERNAL=1` dans `fly.toml` pour déployer d'abord une démo sans
-  clé, puis passez à `0`.
-- La base vit sur le volume monté sur `/data` (`OPPORTUNITY_DB_PATH`) : elle
-  survit aux redéploiements. Se déconnecter : `POST /api/logout`.
+- La base et les vitrines générées vivent sur le volume `/data`
+  (`OPPORTUNITY_DB_PATH` et `OPPORTUNITY_WEBSITES_DIR`) et survivent aux
+  redéploiements. Se déconnecter : `POST /api/logout`.
+
+L'image Docker fournie n'installe pas Claude Code. Le balayage, les diagnostics,
+les briefs et les prototypes HTML fonctionnent ; la finalisation automatique
+des vitrines requiert un agent installé et connecté **dans le conteneur**, puis
+un nouveau build de l'image. La publication Vercel requiert également son jeton.
 
 ### Ailleurs (Docker)
 
@@ -342,13 +356,13 @@ L'image est un conteneur standard, déployable sur n'importe quel hôte Docker
 docker build -t opportunity .
 docker run -p 3000:3000 \
   -e APP_PASSWORD=un_mot_de_passe_solide \
-  -e GOOGLE_PLACES_API_KEY=votre_cle_google \
-  -e MOCK_EXTERNAL=0 \
+  -e MOCK_EXTERNAL=1 \
   -v opportunity_data:/data \
   opportunity
 ```
 
-Montez un volume sur `/data` pour que la base persiste entre deux versions.
+Montez un volume sur `/data` pour conserver la base et les vitrines. Pour les
+vraies recherches, ajoutez la clé Google et passez `MOCK_EXTERNAL` à `0`.
 
 ## Le fond de carte
 
@@ -401,9 +415,9 @@ Les frontières qui gardent le projet peu coûteux et testable :
 - `lib/` n'importe jamais React.
 - Les routes d'API valident leur entrée et délèguent à `lib/`.
 - Les composants ne parlent qu'aux routes d'API locales.
-- `cachedFetch()` dans [`lib/cache.ts`](lib/cache.ts) est le **seul** endroit qui
-  effectue une requête externe — c'est ce qui fait de `MOCK_EXTERNAL=1` un mode
-  hors-ligne complet.
+- Les sources de données du balayage passent par `cachedFetch()` dans
+  [`lib/cache.ts`](lib/cache.ts). `MOCK_EXTERNAL=1` les remplace par les fixtures.
+  Les tuiles CARTO, Claude Code et Vercel ont des flux séparés.
 
 ## Sources de données
 
@@ -434,8 +448,8 @@ ordre approximatif :
   instance est mono-utilisateur — la vôtre, sur vos données, avec votre clé. On
   peut l'[auto-héberger](#déployer-votre-instance), mais il n'y a ni comptes
   multiples, ni serveur central.
-- **Pas de LLM.** Le diagnostic est déterministe et reproductible : le même site
-  obtient deux fois le même score.
+- **Pas de LLM pour le diagnostic.** Le même site obtient deux fois le même
+  score. La finalisation facultative d'une vitrine utilise Claude Code.
 - **Pas de CRM.** L'outil trouve des prospects ; il n'est pas là où vous les
   gérez.
 - **Pas de prospection automatisée.** Ni e-mailing de masse, ni appels
