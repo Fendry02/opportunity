@@ -26,7 +26,8 @@ export function SetupNotice({
         <span className="text-app-muted">
           Les balayages échoueront tant que <Code>GOOGLE_PLACES_API_KEY</Code>{" "}
           n’est pas renseignée dans <Code>.env.local</Code> — ou repassez en démo
-          avec <Code>MOCK_EXTERNAL=1</Code>.
+          avec <Code>MOCK_EXTERNAL=1</Code>. Pour utiliser Scavio à la place,
+          renseignez <Code>SCAVIO_API_KEY</Code>.
         </span>
       </div>
     );

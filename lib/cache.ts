@@ -15,6 +15,7 @@ import { readFixture } from "./fixtures";
 export type CacheSource =
   | "places_search"
   | "places_details"
+  | "scavio_maps"
   | "site"
   | "gouv"
   | "geocode";
@@ -22,6 +23,7 @@ export type CacheSource =
 const TTL_DAYS: Record<CacheSource, number> = {
   places_search: 7,
   places_details: 30,
+  scavio_maps: 7,
   site: 7,
   gouv: 90,
   geocode: 365,

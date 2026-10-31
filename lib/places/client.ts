@@ -50,7 +50,7 @@ const MAX_PAGES = 3;
 /**
  * Plafond de sécurité, en plus des quotas configurés dans la console Google.
  * Compte les appels réellement partis sur le réseau aujourd'hui (les lectures
- * de cache ne comptent pas).
+ * de cache ne comptent pas), Places ou Scavio selon le fournisseur actif.
  */
 const DAILY_CAP = Number(process.env.PLACES_DAILY_CAP ?? 300);
 
@@ -77,14 +77,14 @@ export function placesCallsToday(): number {
   const row = getDb()
     .prepare<[string], { n: number }>(
       `SELECT COUNT(*) AS n FROM api_cache
-        WHERE source IN ('places_search', 'places_details')
+        WHERE source IN ('places_search', 'places_details', 'scavio_maps')
           AND fetched_at >= ?`,
     )
     .get(since);
   return row?.n ?? 0;
 }
 
-function assertUnderCap(): void {
+export function assertUnderCap(): void {
   if (isMockMode()) return;
   const n = placesCallsToday();
   if (n >= DAILY_CAP) throw new PlacesQuotaError(n);

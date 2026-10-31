@@ -43,6 +43,17 @@ Redémarrez l'application. Les recherches Google Places sont facturables : véri
 npm run places:smoke -- "plombier à Tours"
 ```
 
+### Sans compte Google Cloud : Scavio
+
+[Scavio](https://scavio.dev/google-maps-api) renvoie les fiches Google Maps (site web, téléphone, adresse, note, nombre d'avis, catégorie) sans projet Google Cloud ni facturation à configurer ; l'inscription offre 50 crédits. Laissez `GOOGLE_PLACES_API_KEY` vide et renseignez :
+
+```dotenv
+SCAVIO_API_KEY=votre_cle
+MOCK_EXTERNAL=0
+```
+
+Une page de 20 résultats coûte un crédit et contient déjà le site et le téléphone : aucun appel de détails n'est émis. La recherche est centrée sur la commune géocodée. Si les deux clés sont renseignées, Google Places reste utilisé. `PLACES_DAILY_CAP` et le cache SQLite s'appliquent de la même façon. Le mode démo reste servi par les fixtures Places.
+
 ## Vitrines et publication (facultatif)
 
 Depuis les résultats, sélectionnez des prospects puis cliquez sur **Créer N sites**. Une confirmation précède le lancement. Les projets sont écrits dans `../websites` par défaut ; `OPPORTUNITY_WEBSITES_DIR` permet de choisir un autre dossier. Chaque projet contient une vitrine HTML, un prompt, un brouillon de devis et les données source.
