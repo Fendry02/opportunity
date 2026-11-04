@@ -11,6 +11,11 @@ export type PlaceSearchResult = {
   primaryType?: string;
   formattedAddress?: string;
   businessStatus?: "OPERATIONAL" | "CLOSED_TEMPORARILY" | "CLOSED_PERMANENTLY";
+  /**
+   * Renseigné uniquement par Scavio (`places/scavio.ts`), dont la recherche
+   * renvoie déjà site, téléphone et note : aucun appel de détails n'est émis.
+   */
+  details?: PlaceDetails;
 };
 
 export type SearchTextResponse = {

@@ -1,0 +1,130 @@
+{
+  "search_metadata": {
+    "google_maps_url": "https://www.google.com/maps/search/plombier%20%C3%A0%20Tours/@47.3879,0.689,13z/?gl=fr&hl=fr"
+  },
+  "search_parameters": {
+    "engine": "google_maps",
+    "type": "search",
+    "q": "plombier à Tours",
+    "ll": "@47.3879,0.689,13z",
+    "google_domain": "google.com",
+    "hl": "fr",
+    "gl": "fr"
+  },
+  "local_results": [
+    {
+      "position": 1,
+      "title": "Plomberie Atlas",
+      "place_id": "mock_plomberie_atlas",
+      "gps_coordinates": {
+        "latitude": 47.3899,
+        "longitude": 0.691
+      },
+      "rating": 4.6,
+      "reviews": 38,
+      "type": "Plombier",
+      "types": [
+        "Plombier"
+      ],
+      "address": "21 rue Marceau, 37000 Tours",
+      "open_state": "Ouvert · Ferme à 18:00",
+      "hours": "Ouvert · Ferme à 18:00",
+      "operating_hours": {
+        "dimanche": "Fermé",
+        "jeudi": "08:00–18:00",
+        "lundi": "08:00–18:00",
+        "mardi": "08:00–18:00",
+        "mercredi": "08:00–18:00",
+        "samedi": "Fermé",
+        "vendredi": "08:00–17:00"
+      },
+      "phone": "01 00 00 00 00"
+    },
+    {
+      "position": 2,
+      "title": "Plomberie Horizon",
+      "place_id": "mock_plomberie_horizon",
+      "gps_coordinates": {
+        "latitude": 47.3909,
+        "longitude": 0.686
+      },
+      "rating": 4.1,
+      "reviews": 22,
+      "type": "Plombier",
+      "types": [
+        "Plombier"
+      ],
+      "address": "9 place Plumereau, 37000 Tours",
+      "phone": "01 00 00 00 00",
+      "website": "https://www.plomberie-horizon.fr/"
+    },
+    {
+      "position": 3,
+      "title": "Plomberie Locale",
+      "place_id": "mock_plomberie_locale",
+      "gps_coordinates": {
+        "latitude": 47.4129,
+        "longitude": 0.714
+      },
+      "rating": 3.9,
+      "reviews": 11,
+      "type": "Plombier",
+      "types": [
+        "Plombier"
+      ],
+      "address": "1 avenue de l'Europe, 37000 Tours",
+      "phone": "01 00 00 00 00"
+    },
+    {
+      "position": 4,
+      "title": "Plomberie Ravier — PAS DE DÉMARCHAGE",
+      "place_id": "mock_plomberie_optout_nom",
+      "gps_coordinates": {
+        "latitude": 47.3894,
+        "longitude": 0.688
+      },
+      "type": "Plombier",
+      "types": [
+        "Plombier"
+      ],
+      "address": "17 rue du Commerce, 37000 Tours"
+    },
+    {
+      "position": 5,
+      "title": "Grange et Fils",
+      "place_id": "mock_plomberie_optout_site",
+      "gps_coordinates": {
+        "latitude": 47.3859,
+        "longitude": 0.691
+      },
+      "rating": 4.9,
+      "reviews": 97,
+      "type": "Plombier",
+      "types": [
+        "Plombier"
+      ],
+      "address": "45 boulevard Heurteloup, 37000 Tours",
+      "phone": "06 00 00 00 00",
+      "website": "http://pasdedémarchagepourunsite.com/"
+    },
+    {
+      "position": 6,
+      "title": "Sanitaires Lebreton",
+      "place_id": "mock_plomberie_fermee",
+      "gps_coordinates": {
+        "latitude": 47.3889,
+        "longitude": 0.69
+      },
+      "type": "Plombier",
+      "types": [
+        "Plombier"
+      ],
+      "address": "6 rue Bernard Palissy, 37000 Tours",
+      "open_state": "Définitivement fermé"
+    }
+  ],
+  "cached": false,
+  "response_time": 4.1,
+  "credits_used": 1,
+  "credits_remaining": 49
+}

@@ -8,7 +8,8 @@ import {
   type OptOut,
 } from "./opt-out";
 import { getDetails, placesCallsToday, searchText } from "./places/client";
-import type { PlaceSearchResult } from "./places/types";
+import { scavioSelected, searchScavio } from "./places/scavio";
+import type { PlaceDetails, PlaceSearchResult } from "./places/types";
 import { getAnalysis } from "./queries";
 import { type ScoreSignals, computeScore } from "./scoring";
 import type { SearchProgress } from "./types";
@@ -297,9 +298,17 @@ export async function runSearch(searchId: number): Promise<void> {
 
   // Sert à mesurer ce que cette recherche a réellement coûté.
   const callsBefore = placesCallsToday();
+  // Places par défaut ; Scavio seulement si c'est la seule clé renseignée.
+  const scavio = scavioSelected();
+  const findPlaces = scavio ? searchScavio : searchText;
 
   try {
-    const candidates: { id: string; websiteUrl: string | null }[] = [];
+    const candidates: {
+      id: string;
+      websiteUrl: string | null;
+      /** Détails déjà fournis par la recherche (Scavio). */
+      details?: PlaceDetails;
+    }[] = [];
     let optedOut = 0;
 
     for (const sectorId of sectors) {
@@ -312,7 +321,7 @@ export async function runSearch(searchId: number): Promise<void> {
       progress.message = `Recherche : ${sector.label}`;
       setProgress(searchId, progress);
 
-      const places = await searchText({
+      const places = await findPlaces({
         textQuery: `${sector.query} à ${city}`,
         lat: center.lat,
         lng: center.lng,
@@ -334,7 +343,7 @@ export async function runSearch(searchId: number): Promise<void> {
           optedOut += 1;
           continue;
         }
-        candidates.push({ id: place.id, websiteUrl: null });
+        candidates.push({ id: place.id, websiteUrl: null, details: place.details });
       }
 
       progress.sectorsDone += 1;
@@ -355,14 +364,15 @@ export async function runSearch(searchId: number): Promise<void> {
     for (const candidate of candidates) {
       // Le prospect a déjà été détaillé récemment — souvent lors d'une
       // recherche voisine : on réutilise la ligne, aucun appel n'est émis.
-      const known = readDetails.get(candidate.id);
+      // Des détails venus avec la recherche sont gratuits et plus récents.
+      const known = candidate.details ? undefined : readDetails.get(candidate.id);
       if (known && isFresh(known.details_fetched_at, DETAILS_FRESH_DAYS)) {
         candidate.websiteUrl = known.website_url;
         progress.reusedCalls += 1;
         continue;
       }
 
-      const details = await getDetails(candidate.id);
+      const details = candidate.details ?? (await getDetails(candidate.id));
       candidate.websiteUrl = details.websiteUri ?? null;
       db.prepare(
         `UPDATE businesses SET
@@ -408,7 +418,7 @@ export async function runSearch(searchId: number): Promise<void> {
     progress.message =
       `${analysable.length} prospect(s) analysé(s)` +
       (optedOut > 0 ? ` · ${optedOut} écarté(s) (refus de démarchage)` : "") +
-      ` · ${progress.billedCalls} appel(s) Places facturé(s)` +
+      ` · ${progress.billedCalls} appel(s) ${scavio ? "Scavio" : "Places"} facturé(s)` +
       (progress.reusedCalls > 0
         ? `, ${progress.reusedCalls} repris de la mémoire`
         : "");

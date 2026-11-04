@@ -11,6 +11,7 @@ défaut). Aucun appel réseau n'est alors émis : `lib/cache.ts` délègue à
 | `geocode` | `geocode/<ville-slugifiée>.json` (format api-adresse / BAN) |
 | `places_search` | `places_search/<secteur>-<ville>.json` — pages suivantes : `…-p1.json` |
 | `places_details` | `places_details/<place_id>.json`, sinon l'entrée `<place_id>` de `places_details/index.json` |
+| `scavio_maps` | `scavio_maps/<secteur>-<ville>.json` (format Scavio, utilisé par les tests ; la démo reste sur `places_search`) |
 | `gouv` | `gouv/<slug>.json` (format recherche-entreprises) |
 | `site` | `site/<domaine-sans-www>/<chemin>.html` — `/` → `index.html`, `/nos-services` → `nos-services.html`, `/a/b` → `a__b.html` |
 
